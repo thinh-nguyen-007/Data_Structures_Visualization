@@ -16,4 +16,5 @@ public:
 	std::string getText() const;
 	void draw(sf::RenderWindow& window);
 	void clear();
+	bool isActive() const;
 };

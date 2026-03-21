@@ -1,13 +1,13 @@
+# VisualApp/CMakeLists.txt
 add_executable(VisualApp
     main.cpp
     UI.cpp
- "HeapModel.cpp")
-target_include_directories(VisualApp PRIVATE
-    ${CMAKE_SOURCE_DIR}/Heap/include
+    HeapRenderer.cpp
+    AnimationPlayer.cpp
 )
 target_link_libraries(VisualApp
     PRIVATE
-        Heap
+        HeapController
         SFML::Graphics
         SFML::Window
         SFML::System

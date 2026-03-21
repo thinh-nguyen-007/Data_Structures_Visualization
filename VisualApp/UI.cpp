@@ -56,6 +56,8 @@ void InputBox::handleEvent(const sf::Event& event, const sf::RenderWindow& windo
 		auto mouse = event.getIf<sf::Event::MouseButtonPressed>();
 		sf::Vector2f pos = window.mapPixelToCoords(mouse->position);
 		active = box.getGlobalBounds().contains(pos);
+		if (active) box.setOutlineColor(sf::Color::Blue);
+		else box.setOutlineColor(sf::Color::Black);
 	}
 	if (!active) return; 
 	if (event.is<sf::Event::TextEntered>())
@@ -92,4 +94,7 @@ void InputBox::clear() {
 	content.clear();
 	text.setString(content);
 	updateText();
+}
+bool InputBox::isActive() const {
+	return active;
 }
