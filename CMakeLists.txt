@@ -6,7 +6,7 @@ project(Heap LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Tell CMake where SFML is installed
+# assume SFML is directly inside D:/
 set(CMAKE_PREFIX_PATH "D:/SFML-3.0.2")
 
 # Find SFML
