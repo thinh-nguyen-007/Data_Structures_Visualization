@@ -1,6 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.16)
 
-project(HeapVisual LANGUAGES CXX)
+#project(HeapVisual LANGUAGES CXX) origin name, change to Heap to match name
+project(Heap LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
