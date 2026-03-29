@@ -1,5 +1,6 @@
 // main.cpp
 #include <SFML/Graphics.hpp>
+#include "Design.hpp"
 #include "HeapController.hpp"
 #include "HeapRenderer.hpp"
 #include "AnimationPlayer.hpp"
@@ -7,6 +8,7 @@
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({ 1200, 800 }), "Heap Visualizer");
+    sf::View view = window.getDefaultView();
     window.setFramerateLimit(60);
     // assets
     sf::Font font;
@@ -25,17 +27,55 @@ int main() {
     // timing
     sf::Clock clock;
     // UI
-    InputBox insertBox({ 100.f, 40.f }, { 120.f, 40.f }, font);
-    InputBox deleteBox({ 400.f, 40.f }, { 120.f, 40.f }, font);
-    InputBox searchBox({ 700.f, 40.f }, { 120.f, 40.f }, font);
+    InputBox insertBox({ 100.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
+    InputBox deleteBox({ 270.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
+    InputBox searchBox({ 440.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
+    // Labels
+    Label insertLabel("Insert", font, sf::Color::White);
+    Label deleteLabel("Delete", font, sf::Color::White);
+    Label searchLabel("Search", font, sf::Color::White);
+    // Position labels
+    insertLabel.matchHead(insertBox.getBox().getGlobalBounds());
+    deleteLabel.matchHead(deleteBox.getBox().getGlobalBounds());
+    searchLabel.matchHead(searchBox.getBox().getGlobalBounds());
+    // Description box
+    float descX = 600.f, descY = 20.f, descW = 560.f, descH = 80.f;
+    OutputBox descBox({ 600.f, 20.f }, { 560.f, 80.f }, font, { 120, 255, 180 }, "Step Description");
+    // mouse drag
+    bool dragging = false;
+    sf::Vector2i lastMouse;
+
+    // main loop
     while (window.isOpen()) {
         // ================= EVENTS =================
         while (auto event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
+            // mouse control
+            if (event->is<sf::Event::MouseWheelScrolled>()) {
+                auto scroll = event->getIf<sf::Event::MouseWheelScrolled>();
+                if (scroll->delta > 0) view.zoom(0.9f);   // zoom in
+                else view.zoom(1.1f);   // zoom out
+            }
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+                auto mouse = event->getIf<sf::Event::MouseButtonPressed>();
+                if (mouse->button == sf::Mouse::Button::Left) {
+                    dragging = true;
+                    lastMouse = mouse->position;
+                }
+            }
+            if (event->is<sf::Event::MouseButtonReleased>()) dragging = false;
+            if (event->is<sf::Event::MouseMoved>() && dragging) {
+                auto move = event->getIf<sf::Event::MouseMoved>();
+                sf::Vector2i delta = lastMouse - move->position;
+                sf::Vector2f worldDelta = window.mapPixelToCoords(lastMouse) -
+                    window.mapPixelToCoords(move->position);
+                view.move(worldDelta);
+                lastMouse = move->position;
+            }
+            // keyboard input
             insertBox.handleEvent(*event, window);
             deleteBox.handleEvent(*event, window);
             searchBox.handleEvent(*event, window);
-            // keyboard input
             if (event->is<sf::Event::KeyPressed>()) {
                 auto key = event->getIf<sf::Event::KeyPressed>();
                 bool ctrl =
@@ -63,18 +103,25 @@ int main() {
             }
         }
         // ================= UPDATE =================
-        float maxSpeed = 3.6f;
-        float speed = 1.0f + std::log(controller.getHeap().getSize() + 1);
-        if (speed > maxSpeed) speed = maxSpeed;
+        float speed = 1.5f;
         float dt = clock.restart().asSeconds() * speed;
-        player.update(dt, controller);
+        player.update(dt, controller, window.getSize().x);
+        descBox.setText(controller.getMessage());
         // ================= RENDER =================
         window.clear();
         window.draw(background);
-        renderer.draw(window, controller, font);
+        // ================= WORLD (heap) =================
+        window.setView(view);
+        renderer.draw(window, controller, player, font);
+        // ================= UI (fixed) =================
+        window.setView(window.getDefaultView());
+        descBox.draw(window);
         insertBox.draw(window);
+        insertLabel.draw(window);
         deleteBox.draw(window);
+        deleteLabel.draw(window);
         searchBox.draw(window);
+        searchLabel.draw(window);
         window.display();
     }
     return 0;
