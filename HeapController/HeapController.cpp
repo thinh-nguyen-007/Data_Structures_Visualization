@@ -1,40 +1,46 @@
 // HeapController.cpp
 #include "HeapController.hpp"
+#include "algorithm"
 
 HeapController::HeapController() {
-	saveState();
+	currentMessage = "Ready";
 }
 bool HeapController::hasSteps() const {
-	return !steps.empty();
+	return stepIndex < steps.size();
 }
 Heap& HeapController::getHeap() {
 	return heap;
 }
 void HeapController::push(int x) {
+	if (hasSteps()) steps.resize(stepIndex);
 	Heap temp = heap;
 	int id = temp.getSize();
 	temp.pushRaw(x);
-	steps.push({ HeapStep::Insert, -1, x });
+	steps.push_back({ HeapStep::Insert, -1, x, "Insert " + std::to_string(x) });
 	while (id > 0) {
 		int parent = (id - 1) / 2;
-		steps.push({ HeapStep::Compare, parent, id });
+		steps.push_back({ HeapStep::Compare, parent, id, "Compare " + std::to_string(temp[parent])
+			+ " and " + std::to_string(temp[id]) });
 		if (temp[parent] >= temp[id]) break;
-		steps.push({ HeapStep::Swap, parent, id });
+		steps.push_back({ HeapStep::Swap, parent, id, "Swap " + std::to_string(temp[parent])
+			+ " and " + std::to_string(temp[id]) });
 		temp.swapAt(parent, id);
 		id = parent;
 	}
-	steps.push({ HeapStep::Done, -1, -1 });
+	steps.push_back({ HeapStep::Done, -1, -1, "Insert " + std::to_string(x) + " completed" });
 }
 bool HeapController::pop(int& x) {
 	if (heap.getSize() == 0) return false;
+	if (hasSteps()) steps.resize(stepIndex);
 	Heap temp = heap;
 	x = temp[0]; // return top
 	int last = temp.getSize() - 1;
 	// swap root with last
-	steps.push({ HeapStep::Swap, 0, last });
+	steps.push_back({ HeapStep::Swap, 0, last, "Swap root " + std::to_string(temp[0]) +
+		" with " + std::to_string(temp[last]) });
 	temp.swapAt(0, last);
 	// remove last
-	steps.push({ HeapStep::Remove, last, -1 });
+	steps.push_back({ HeapStep::Remove, last, -1, "Remove " + std::to_string(temp[last]) });
 	temp.removeLast();
 	// downHeap simulation
 	int id = 0;
@@ -43,19 +49,22 @@ bool HeapController::pop(int& x) {
 		int right = 2 * id + 2;
 		int largest = id;
 		if (left < temp.getSize()) {
-			steps.push({ HeapStep::Compare, id, left });
+			steps.push_back({ HeapStep::Compare, id, left, "Compare " + std::to_string(temp[id]) +
+				" and " + std::to_string(temp[left]) });
 			if (temp[left] > temp[largest]) largest = left;
 		}
 		if (right < temp.getSize()) {
-			steps.push({ HeapStep::Compare, largest, right });
+			steps.push_back({ HeapStep::Compare, largest, right, "Compare " + std::to_string(temp[largest]) +
+				" and " + std::to_string(temp[right]) });
 			if (temp[right] > temp[largest]) largest = right;
 		}
 		if (largest == id) break;
-		steps.push({ HeapStep::Swap, id, largest });
+		steps.push_back({ HeapStep::Swap, id, largest, "Swap " + std::to_string(temp[id]) +
+			" and " + std::to_string(temp[largest]) });
 		temp.swapAt(id, largest);
 		id = largest;
 	}
-	steps.push({ HeapStep::Done, -1, -1 });
+	steps.push_back({ HeapStep::Done, -1, -1, "Remove completed" });
 	return true;
 }
 int HeapController::getHighlightA() const {
@@ -64,21 +73,21 @@ int HeapController::getHighlightA() const {
 int HeapController::getHighlightB() const {
 	return highlightB;
 }
-void HeapController::saveState() {
-	std::vector<int> snapshot;
-	for (int i = 0; i < heap.getSize(); i++) snapshot.push_back(heap[i]); 
-	// remove future states if we branched
-	if (historyIndex < history.size() - 1) history.resize(historyIndex + 1);
-	history.push_back(snapshot);
-	historyIndex++;
+size_t HeapController::getStepIndex() const {
+	return stepIndex;
+}
+const HeapStep& HeapController::getCurrentStep() const {
+	return steps[stepIndex - 1];
 }
 void HeapController::nextStep() {
-	if (steps.empty()) return;
+	if (stepIndex >= steps.size()) return;
+	const HeapStep& step = steps[stepIndex];
+
 	highlightA = -1;
 	highlightB = -1;
-	HeapStep step = steps.front();
-	steps.pop();
-	switch (step.type) 
+	lastStepType = step.type;
+	currentMessage = step.message;
+	switch (step.type)
 	{
 	case HeapStep::Insert:
 		heap.pushRaw(step.b);
@@ -90,28 +99,70 @@ void HeapController::nextStep() {
 		highlightA = step.a;
 		highlightB = step.b;
 		break;
-	case HeapStep::Done:
-		highlightA = -1;
-		highlightB = -1;
-		break;
 	case HeapStep::Remove:
 		heap.removeLast();
 		break;
+	case HeapStep::Done:
+		break;
 	}
-	saveState();
+	stepIndex++; 
 }
 void HeapController::runAll() {
-	while (!steps.empty()) nextStep();
+	while (stepIndex < steps.size()) nextStep();
 }
 void HeapController::undo() {
-	if (historyIndex == 0) return;
-	historyIndex--;
-	heap.clear();
-	for (int v : history[historyIndex]) heap.pushRaw(v);
+	if (stepIndex <= 0) return;
+	stepIndex--;
+	rebuildHeapUpTo(stepIndex);
 }
 void HeapController::redo() {
-	if (historyIndex >= history.size() - 1) return;
-	historyIndex++;
+	nextStep();
+}
+std::string HeapController::getMessage() const {
+	return currentMessage;
+}
+HeapStep::Type HeapController::getLastStepType() const {
+	return lastStepType;
+}
+HeapStep::Type HeapController::peekNextStepType() const {
+	if (stepIndex >= steps.size()) return HeapStep::Done;
+	return steps[stepIndex].type;
+}
+int HeapController::peekNextA() const {
+	if (stepIndex >= steps.size()) return -1;
+	return steps[stepIndex].a;
+}
+void HeapController::searchVisual(int x) {
+	if (isBusy()) return;
+	if (hasSteps()) steps.resize(stepIndex);
+	int idx = heap.search(x);
+	if (idx != -1) {
+		steps.push_back({ HeapStep::Compare, idx, idx, "Found " + std::to_string(x) + " at index " + std::to_string(idx) });
+	}
+	steps.push_back({ HeapStep::Done, -1, -1, (idx != -1 ? "Search completed" : "Value not found") });
+}
+bool HeapController::isBusy() const {
+	return stepIndex < steps.size();
+}
+void HeapController::rebuildHeapUpTo(int k) {
 	heap.clear();
-	for (int v : history[historyIndex]) heap.pushRaw(v);
+	highlightA = -1;
+	highlightB = -1;
+	for (int i = 0; i < k; i++) {
+		const HeapStep& step = steps[i];
+		switch (step.type) {
+		case HeapStep::Insert:
+			heap.pushRaw(step.b);
+			break;
+		case HeapStep::Swap:
+			heap.swapAt(step.a, step.b);
+			break;
+		case HeapStep::Remove:
+			heap.removeLast();
+			break;
+		case HeapStep::Compare:
+		case HeapStep::Done:
+			break;
+		}
+	}
 }
