@@ -47,12 +47,12 @@ InputBox::InputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& fon
 	errorText.setCharacterSize(charSize - 5);
 	errorText.setFillColor(sf::Color::Red);
 	errorText.setString("");
-	errorText.setPosition({ box.getPosition().x + 4.f,
+	errorText.setPosition({ box.getPosition().x + 1.f,
 		box.getPosition().y + box.getSize().y + 2.f
 		});
 	updateText();
 }
-void InputBox::handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
+void InputBox::handleInsert(const sf::Event& event, const sf::RenderWindow& window) {
 	if (event.is<sf::Event::MouseButtonPressed>()) 
 	{
 		auto mouse = event.getIf<sf::Event::MouseButtonPressed>();
@@ -65,9 +65,14 @@ void InputBox::handleEvent(const sf::Event& event, const sf::RenderWindow& windo
 		else {
 			box.setOutlineColor(sf::Color::Black);
 			box.setOutlineThickness(2.f);
+			text.setString("");
+			content.clear();
 		}
 	}
-	if (!active) return; 
+	if (!active) {
+		errorText.setString("");
+		return;
+	}
 	if (event.is<sf::Event::TextEntered>())
 	{
 		auto txt = event.getIf<sf::Event::TextEntered>();
@@ -90,6 +95,43 @@ void InputBox::handleEvent(const sf::Event& event, const sf::RenderWindow& windo
 		updateText();
 	}
 }
+void InputBox::handleDelete(const sf::Event& event, const sf::RenderWindow& window, int top) {
+	if (event.is<sf::Event::MouseButtonPressed>())
+	{
+		auto mouse = event.getIf<sf::Event::MouseButtonPressed>();
+		sf::Vector2f pos = window.mapPixelToCoords(mouse->position);
+		active = box.getGlobalBounds().contains(pos);
+		if (active) {
+			box.setOutlineColor(NeonColor::transparency(NeonColor::Lava, 140));
+			box.setOutlineThickness(5.f);
+			if (top > 0) text.setString("Top: " + std::to_string(top));
+			else text.setString("Top: null");
+			updateText();
+		}
+		else {
+			box.setOutlineColor(sf::Color::Black);
+			box.setOutlineThickness(2.f);
+			text.setString("");
+		}
+	}
+	if (!active) {
+		errorText.setString("");
+		return;
+	}
+	if (event.is<sf::Event::TextEntered>())
+	{
+		if (top >= 0) {
+			errorText.setString("Enter to pop");
+			errorText.setFillColor(CosmicColor::AuroraGreen);
+		}
+		else {
+			text.setString("Nothing");
+			errorText.setString("No element to pop!");
+			errorText.setFillColor(sf::Color::Red);
+		}
+		updateText();
+	}
+}
 std::string InputBox::getText() const {
 	return content;
 }
@@ -109,6 +151,9 @@ bool InputBox::isActive() const {
 const sf::RectangleShape& InputBox::getBox() const {
 	return box;
 }
+void InputBox::setFillColor(sf::Color color) {
+	box.setFillColor(color);
+}
 // OutputBox
 OutputBox::OutputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font, 
 	sf::Color fill, const std::string& titleStr) : text(font), title(font) {
@@ -117,7 +162,7 @@ OutputBox::OutputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& f
 	box.setSize(size);
 	box.setFillColor(fill);
 	box.setOutlineColor(sf::Color::Black);
-	box.setOutlineThickness(1.f);
+	box.setOutlineThickness(2.f);
 	// title
 	title.setString(titleStr);
 	title.setCharacterSize(14);

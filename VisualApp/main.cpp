@@ -11,10 +11,11 @@ int main() {
     sf::View view = window.getDefaultView();
     window.setFramerateLimit(60);
     // assets
-    sf::Font font;
+    sf::Font font, bolderFont;
     sf::Texture backgroundTex;
-    if (!backgroundTex.loadFromFile("assets/bg.png")) return 1;
-    if (!font.openFromFile("assets/font.ttf")) return 1;
+    if (!backgroundTex.loadFromFile("assets/bg_trees.png")) return 1;
+    if (!font.openFromFile("assets/Roboto.ttf")) return 1;
+    if (!bolderFont.openFromFile("assets/RobotoExtraBold.ttf")) return 1;
     // background
     sf::Sprite background(backgroundTex);
     auto bgBounds = background.getLocalBounds();
@@ -27,13 +28,22 @@ int main() {
     // timing
     sf::Clock clock;
     // UI
+    // Dashboard
+    sf::RectangleShape dashboard({ 1200.f, 106.f });
+    dashboard.setFillColor({ 176, 226, 255 }); // light sky blue
+    dashboard.setOutlineThickness(8.f);
+    dashboard.setOutlineColor({ 135, 206, 235 }); // sky blue
+    sf::RectangleShape tableBackground({ 1200.f, 200.f });
+    tableBackground.setFillColor(PastelColor::Yellow);
+    tableBackground.setPosition({ 0.f, 600.f });
+    // Input Box
     InputBox insertBox({ 100.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
     InputBox deleteBox({ 270.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
     InputBox searchBox({ 440.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
     // Labels
-    Label insertLabel("Insert", font, sf::Color::White);
-    Label deleteLabel("Delete", font, sf::Color::White);
-    Label searchLabel("Search", font, sf::Color::White);
+    Label insertLabel("Insert", bolderFont, DeepColor::Green);
+    Label deleteLabel("Delete", bolderFont, DeepColor::Red);
+    Label searchLabel("Search", bolderFont, DeepColor::Indigo);
     // Position labels
     insertLabel.matchHead(insertBox.getBox().getGlobalBounds());
     deleteLabel.matchHead(deleteBox.getBox().getGlobalBounds());
@@ -73,10 +83,23 @@ int main() {
                 lastMouse = move->position;
             }
             // keyboard input
-            insertBox.handleEvent(*event, window);
-            deleteBox.handleEvent(*event, window);
-            searchBox.handleEvent(*event, window);
+            if (!controller.isBusy()){
+                insertBox.setFillColor(CosmicColor::StellarYellow);
+                deleteBox.setFillColor(CosmicColor::StellarYellow);
+                searchBox.setFillColor(CosmicColor::StellarYellow);
+                insertBox.handleInsert(*event, window);
+                int t = -1;
+                if (!controller.getHeap().empty()) t = controller.getHeap().top();
+                deleteBox.handleDelete(*event, window, t);
+                searchBox.handleInsert(*event, window);
+            }
+            else {
+                insertBox.setFillColor(DeepColor::Gold);
+                deleteBox.setFillColor(DeepColor::Gold);
+                searchBox.setFillColor(DeepColor::Gold);
+            }
             if (event->is<sf::Event::KeyPressed>()) {
+                if (controller.isBusy()) continue;
                 auto key = event->getIf<sf::Event::KeyPressed>();
                 bool ctrl =
                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl) ||
@@ -100,21 +123,35 @@ int main() {
                     controller.pop(x);
                     deleteBox.clear();
                 }
+                // SEARCH
+                if (key->code == sf::Keyboard::Key::Enter && searchBox.isActive()) {
+                    std::string txt = searchBox.getText();
+                    if (!txt.empty()) {
+                        int x = std::stoi(txt);
+                        controller.searchVisual(x);
+                        searchBox.clear();
+                    }
+                }
             }
         }
         // ================= UPDATE =================
-        float speed = 1.5f;
+        float speed = 3.6f;
         float dt = clock.restart().asSeconds() * speed;
         player.update(dt, controller, window.getSize().x);
         descBox.setText(controller.getMessage());
         // ================= RENDER =================
         window.clear();
         window.draw(background);
-        // ================= WORLD (heap) =================
+        // Heap's binary tree
         window.setView(view);
         renderer.draw(window, controller, player, font);
-        // ================= UI (fixed) =================
+        // Fixed UI
         window.setView(window.getDefaultView());
+        window.draw(dashboard);
+        // Heap's table
+        window.draw(tableBackground);
+        renderer.drawTable(window, controller, font);
+        // Header fixed UI
         descBox.draw(window);
         insertBox.draw(window);
         insertLabel.draw(window);

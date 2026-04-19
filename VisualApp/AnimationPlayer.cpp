@@ -18,64 +18,30 @@ static sf::Vector2f computeNodePos(int i, float width) {
 
 void AnimationPlayer::update(float dt, HeapController& controller, float width) {
     accumulator += dt;
-
-    if (controller.hasSteps() && accumulator >= delay) {
-
-        auto nextType = controller.peekNextStepType();
-
-        int removeIndex = -1;
-        if (nextType == HeapStep::Remove) {
-            removeIndex = controller.peekNextA(); // BEFORE delete
-        }
-
+    // only move forward in timeline
+    if (controller.isBusy() && accumulator >= delay) {
         controller.nextStep();
-
-        // ================= INSERT =================
-        if (nextType == HeapStep::Insert) {
-
+        const HeapStep& step = controller.getCurrentStep();
+        if (step.type == HeapStep::Insert) {
             int idx = controller.getHeap().getSize() - 1;
-            sf::Vector2f base = computeNodePos(idx, width);
-
-            for (int i = 0; i < 15; i++) {
-                float angle = (i / 15.f) * 2.f * 3.14159f;
-                float speed = 80.f + rand() % 40;
-
-                Star s;
-                s.basePos = base;
-                s.velocityX = std::cos(angle) * speed;
-                s.velocityY = std::sin(angle) * speed;
-                s.lifetime = 0.6f;
-                s.color = StarColor::random();
-
-                stars.push_back(s);
-            }
+            spawnInsertEffect(idx, width);
         }
-
-        // ================= DELETE =================
-        if (nextType == HeapStep::Remove && removeIndex != -1) {
-
-            sf::Vector2f base = computeNodePos(removeIndex, width);
-
-            for (int i = 0; i < 18; i++) {
-                float angle = (i / 18.f) * 2.f * 3.14159f;
-                float speed = 150.f + rand() % 80;
-
-                Star s;
-                s.basePos = base;
-                s.velocityX = std::cos(angle) * speed;
-                s.velocityY = std::sin(angle) * speed;
-                s.lifetime = 0.4f;
-                s.color = DeepColor::random();
-
-                stars.push_back(s);
-            }
+        if (step.type == HeapStep::Remove) {
+            spawnRemoveEffect(step.a, width);
         }
-
         accumulator = 0.f;
     }
+    updateStars(dt);
+}
 
-    // ================= UPDATE STARS =================
-    for (auto it = stars.begin(); it != stars.end(); ) {
+void AnimationPlayer::setDelay(float d) {
+    delay = d;
+}
+const std::vector<AnimationPlayer::Star>& AnimationPlayer::getStars() const {
+    return stars;
+}
+void AnimationPlayer::updateStars(float dt) {
+    for (auto it = stars.begin(); it != stars.end();) {
         it->lifetime -= dt;
 
         it->offsetX += it->velocityX * dt;
@@ -88,10 +54,32 @@ void AnimationPlayer::update(float dt, HeapController& controller, float width) 
     }
 }
 
-void AnimationPlayer::setDelay(float d) {
-    delay = d;
+void AnimationPlayer::spawnInsertEffect(int idx, float width) {
+    sf::Vector2f base = computeNodePos(idx, width);
+    for (int i = 0; i < 15; i++) {
+        float angle = (i / 15.f) * 2.f * 3.14159f;
+        float speed = 80.f + rand() % 40;
+        Star s;
+        s.basePos = base;
+        s.velocityX = std::cos(angle) * speed;
+        s.velocityY = std::sin(angle) * speed;
+        s.lifetime = 0.6f;
+        s.color = StarColor::random();
+        stars.push_back(s);
+    }
 }
-
-const std::vector<AnimationPlayer::Star>& AnimationPlayer::getStars() const {
-    return stars;
+void AnimationPlayer::spawnRemoveEffect(int idx, float width) {
+    if (idx < 0) return;
+    sf::Vector2f base = computeNodePos(idx, width);
+    for (int i = 0; i < 18; i++) {
+        float angle = (i / 18.f) * 2.f * 3.14159f;
+        float speed = 150.f + rand() % 80;
+        Star s;
+        s.basePos = base;
+        s.velocityX = std::cos(angle) * speed;
+        s.velocityY = std::sin(angle) * speed;
+        s.lifetime = 0.4f;
+        s.color = DeepColor::random();
+        stars.push_back(s);
+    }
 }

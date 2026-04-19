@@ -82,3 +82,27 @@ inline sf::ConvexShape createStar(float outer = 4.f, float inner = 2.f) {
     star.setOrigin({ 0.f, 0.f }); // optional
     return star;
 }
+// draw arow
+inline void drawArrow(sf::RenderWindow& window, sf::Vertex line[2], sf::Color color) {
+    auto& start = line[0].position;
+    auto& end = line[1].position;
+    // calculate head
+    float angle = std::atan2(end.y - start.y, end.x - start.x);
+    float headLength = 15.f;
+    float headAngle = 0.5f; // Radians
+    sf::Vector2f p1(end.x - headLength * std::cos(angle - headAngle),
+        end.y - headLength * std::sin(angle - headAngle));
+    sf::Vector2f p2(end.x - headLength * std::cos(angle + headAngle),
+        end.y - headLength * std::sin(angle + headAngle));
+    // shape
+    sf::ConvexShape arrowhead;
+    arrowhead.setPointCount(3);
+    arrowhead.setPoint(0, end);
+    arrowhead.setPoint(1, p1);
+    arrowhead.setPoint(2, p2);
+    arrowhead.setFillColor(color);
+
+    // 4. Draw
+    window.draw(line, 2, sf::PrimitiveType::Lines);
+    window.draw(arrowhead);
+}

@@ -13,12 +13,14 @@ private:
 public:
 	InputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font,
         sf::Color fillColor = sf::Color::White);
-	void handleEvent(const sf::Event& event, const sf::RenderWindow& window);
+	void handleInsert(const sf::Event& event, const sf::RenderWindow& window);
+    void handleDelete(const sf::Event& event, const sf::RenderWindow& window, int top);
 	std::string getText() const;
 	void draw(sf::RenderWindow& window);
 	void clear();
 	bool isActive() const;
     const sf::RectangleShape& getBox() const;
+    void setFillColor(sf::Color color);
 };
 class OutputBox {
 private:

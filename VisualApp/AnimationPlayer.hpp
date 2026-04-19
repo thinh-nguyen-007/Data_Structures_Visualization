@@ -8,19 +8,17 @@ class AnimationPlayer {
 private:
     float delay = 0.5f;
     float accumulator = 0.f;
-
     struct Star {
-        sf::Vector2f basePos; //  replaced nodeIndex
-
+        sf::Vector2f basePos;
         float offsetX = 0.f, offsetY = 0.f;
         float velocityX = 0.f, velocityY = 0.f;
         float lifetime = 0.f;
-
         sf::Color color;
     };
-
     std::vector<Star> stars;
-
+    void spawnInsertEffect(int idx, float width);
+    void spawnRemoveEffect(int idx, float width);
+    void updateStars(float dt);
 public:
     void update(float dt, HeapController& controller, float width);
     void setDelay(float d);
