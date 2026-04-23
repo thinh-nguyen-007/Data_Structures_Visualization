@@ -2,6 +2,8 @@ CXX = g++
 CXXFLAGS = -std=c++20 \
 	-Iinclude \
 	-Iinclude/Tree \
+	-Iinclude/AVLTreeVisualization \
+	-Iinclude/snapshots \
 	-I$(RAYLIB_DIR)/include -O2
 LDFLAGS = -L$(RAYLIB_DIR)/lib -lraylib -lopengl32 -lgdi32 -lwinmm -luser32
 

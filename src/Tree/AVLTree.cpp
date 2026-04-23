@@ -2,13 +2,49 @@
 #include <vector>
 #include <cstdint>
 #include <string>
+#include <queue>
 #include "AVLTree.h"
+#include "raylib.h"
+#include "raymath.h"
 
 using namespace std;
 
+AVLTree Tree;
+
+void AVLTree::DrawAVLTree(void) {
+    if (tree) {
+        DrawCircle(1920 / 2, 50, 50.0f, WHITE);
+        DrawRing(Vector2{1920 / 2, 50}, 45.0f, 50.0f, 0.0f, 360.0f, 100, BLACK);
+        DrawTextEx(GetFontDefault(), to_string(tree->data).c_str(), Vector2{(1920 - MeasureTextEx(GetFontDefault(), to_string(tree->data).c_str(), 40, 5).x) / 2, (100 - MeasureTextEx(GetFontDefault(), to_string(tree->data).c_str(), 40, 5).y) / 2}, 40, 5, BLACK);
+    }
+
+    RecuresiveDraw(tree, Vector2{1920 / 2, 50}, 50, GetScreenWidth() / 4, GetScreenWidth());
+}
+
+void AVLTree::RecuresiveDraw(node* tree, Vector2 parpos, int depth, int spacing, int width) {
+    if (tree == nullptr) return;
+
+    if (tree->left) {
+        DrawLine(parpos.x, parpos.y, parpos.x - spacing, depth + 100, BLACK);
+        DrawCircle(parpos.x - spacing, depth + 100, 50.0f, WHITE);
+        DrawRing(Vector2{parpos.x - spacing, depth + 100}, 45.0f, 50.0f, 0.0f, 360.0f, 100, BLACK);
+        DrawTextEx(GetFontDefault(), to_string(tree->left->data).c_str(), Vector2{parpos.x - spacing - (MeasureTextEx(GetFontDefault(), to_string(tree->left->data).c_str(), 40, 5).x) / 2, depth + 100 - (MeasureTextEx(GetFontDefault(), to_string(tree->left->data).c_str(), 40, 5).y) / 2}, 40, 5, BLACK);
+    }
+    
+    if (tree->right) {
+        DrawLine(parpos.x, parpos.y, parpos.x + spacing, depth + 100, BLACK);
+        DrawCircle(parpos.x + spacing, depth + 100, 50.0f, WHITE);
+        DrawRing(Vector2{parpos.x + spacing, depth + 100}, 45.0f, 50.0f, 0.0f, 360.0f, 100, BLACK);
+        DrawTextEx(GetFontDefault(), to_string(tree->right->data).c_str(), Vector2{parpos.x + spacing - (MeasureTextEx(GetFontDefault(), to_string(tree->right->data).c_str(), 40, 5).x) / 2, depth + 100 - (MeasureTextEx(GetFontDefault(), to_string(tree->right->data).c_str(), 40, 5).y) / 2}, 40, 5, BLACK);
+    }
+
+    if (tree->left) RecuresiveDraw(tree->left, Vector2{parpos.x - spacing, depth + 100}, depth + 100, spacing / 2, width);
+    if (tree->right) RecuresiveDraw(tree->right, Vector2{parpos.x + spacing, depth + 100}, depth + 100, spacing / 2, width);
+}  
+
 void AVLTree::Initialize(vector <long long> &a) {
     for (int i = 0; i < a.size(); i++) 
-        Insert(tree, a[i]);
+        tree = Insert(tree, a[i]);
 }
 
 void AVLTree::Update(node* tree, long long data) {
@@ -28,8 +64,13 @@ int AVLTree::getBalance(node* tree) {
 }   
 
 AVLTree::node* AVLTree::Insert(node* tree, long long data) {
-    if (tree == nullptr)
-        return new node(data);
+    if (tree == nullptr) {
+        tree = new node(data);
+
+        return tree;
+    }
+
+    // cout << tree->data << endl;
 
     if (data < tree->data) 
         tree->left = Insert(tree->left, data);
@@ -157,4 +198,26 @@ AVLTree::node* AVLTree::rotateRight(node* tree) {
     updateHeight(x);
 
     return x;
+}
+
+vector <long long> AVLTree::LevelOrder(void) {
+    vector <long long> result;
+    if (tree == nullptr) {
+        return result;
+    }
+
+    queue <node*> q;
+    q.push(tree);
+
+    while (!q.empty()) {
+        node* temp = q.front();
+        q.pop();
+
+        result.push_back(temp->data);
+
+        if (temp->left) q.push(temp->left);
+        if (temp->right) q.push(temp->right);
+    }
+
+    return result;
 }
