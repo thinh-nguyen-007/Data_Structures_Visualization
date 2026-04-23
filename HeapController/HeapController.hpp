@@ -26,32 +26,45 @@ private:
 	std::vector<HeapStep> steps;
 	size_t stepIndex = 0;
 	HeapStep::Type lastStepType = HeapStep::Done;
+	bool paused = false;
 	// highlight node index
 	int highlightA = -1;
 	int highlightB = -1;
 	// message
 	std::string currentMessage;
 	// helpers
-	bool hasSteps() const;
+	bool hasSteps() const { return stepIndex < steps.size(); }
+	void heapifySteps(Heap& temp, int id, int size);
 public:
+	// constructor
 	HeapController();
-	Heap& getHeap();
+	// functions
 	void push(int x);
 	bool pop(int& x);
 	void searchVisual(int x);
-	// logic state - step - undo/redo
+	void heapifyVisual(int i);
+	void buildMaxHeapVisual();
+	void heapSortVisual();
+	// logic state: condition - pause - next step - undo/redo
+	bool isBusy() const;
+	bool isPaused() const { return paused; }
+	void setPaused(bool t) { paused = t; }
+	void togglePaused() { paused = !paused; }
 	void nextStep();
-	void runAll();
-	int getHighlightA() const;
-	int getHighlightB() const;
-	size_t getStepIndex() const;
-	const HeapStep& getCurrentStep() const;
+	void runToEnd();
+	void resetToStart();
+	bool isAtOperationEnd() const;
 	void undo();
 	void redo();
-	std::string getMessage() const;
-	HeapStep::Type getLastStepType() const;
+	void rebuildHeapUpTo(int k);
+	// get data
+	Heap& getHeap() { return heap; }
+	int getHighlightA() const { return highlightA; }
+	int getHighlightB() const { return highlightB; }
+	size_t getStepIndex() const { return stepIndex; }
+	const HeapStep& getCurrentStep() const { return steps[stepIndex - 1]; }
+	std::string getMessage() const { return currentMessage; }
+	HeapStep::Type getLastStepType() const { return lastStepType; }
 	HeapStep::Type peekNextStepType() const;
 	int peekNextA() const;
-	bool isBusy() const;
-	void rebuildHeapUpTo(int k);
 };
