@@ -4,6 +4,7 @@
 #include <queue>
 #include <vector>
 #include <string>
+#include <fstream>
 
 struct HeapStep {
 	enum Type { Insert, Compare, Swap, Remove, Done };
@@ -54,6 +55,7 @@ public:
 	void runToEnd();
 	void resetToStart();
 	bool isAtOperationEnd() const;
+	bool canInteract() const { return !isBusy() || (isPaused() && isAtOperationEnd()); }
 	void undo();
 	void redo();
 	void rebuildHeapUpTo(int k);
@@ -67,4 +69,6 @@ public:
 	HeapStep::Type getLastStepType() const { return lastStepType; }
 	HeapStep::Type peekNextStepType() const;
 	int peekNextA() const;
+	// file consistence
+
 };
