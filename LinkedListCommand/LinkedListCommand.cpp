@@ -1,103 +1,229 @@
-#pragma once
-#include "LinkedList.hpp"
-#include <vector>
-#include <string>
+#include "LinkedListController.hpp"
 
-// ===== Step =====
-struct LinkedListStep {
-    enum Type {
-        Insert,
-        Traverse,
-        Delete,
-        Update,
-        Found,
-        NotFound,
-        Done
-    };
+// ===== Constructor =====
+LinkedListController::LinkedListController() {
+    currentMessage = "Ready";
+}
 
-    Type type;
-    int index;
-    int value;
-    std::string message;
-};
+// ===== Push Back (visual) =====
+void LinkedListController::pushBack(int value) {
+    if (hasSteps()) steps.resize(stepIndex);
+    paused = false;
 
-// ===== State (for visualization) =====
-struct LinkedListState {
-    std::vector<int> data;
-    std::string message;
-    int highlightIndex;
-};
+    LinkedList temp = list;
 
-// ===== Controller =====
-class LinkedListController {
-private:
-    LinkedList list;
+    int idx = 0;
+    Node* cur = temp.getHead();
 
-    // animation support
-    std::vector<LinkedListStep> steps;
-    size_t stepIndex = 0;
+    // traverse
+    while (cur) {
+        steps.push_back({ LinkedListStep::Traverse, idx, cur->data,
+            "Traverse node " + std::to_string(cur->data) });
+        cur = cur->next;
+        idx++;
+    }
 
-    LinkedListStep::Type lastStepType = LinkedListStep::Done;
+    // insert
+    steps.push_back({ LinkedListStep::Insert, idx, value,
+        "Insert " + std::to_string(value) + " at position " + std::to_string(idx) });
 
-    bool paused = false;
+    steps.push_back({ LinkedListStep::Done, -1, -1, "Insert completed" });
+}
 
-    // highlight
-    int highlightIndex = -1;
+// ===== Pop Front =====
+void LinkedListController::popFront() {
+    if (list.empty()) return;
 
-    // message
-    std::string currentMessage;
+    if (hasSteps()) steps.resize(stepIndex);
+    paused = false;
 
-    // helper
-    bool hasSteps() const { return stepIndex < steps.size(); }
+    steps.push_back({ LinkedListStep::Delete, 0, list.get(0),
+        "Remove head " + std::to_string(list.get(0)) });
 
-public:
-    // constructor
-    LinkedListController();
+    steps.push_back({ LinkedListStep::Done, -1, -1, "Remove completed" });
+}
 
-    // ===== Core operations =====
-    void pushBack(int value);
-    void pushFront(int value);
-    void insertAt(int index, int value);
+// ===== Remove At =====
+void LinkedListController::removeAt(int index) {
+    if (index < 0 || index >= list.getSize()) return;
 
-    void removeAt(int index);
-    void popFront();
-    void popBack();
+    if (hasSteps()) steps.resize(stepIndex);
+    paused = false;
 
-    void update(int index, int value);
+    for (int i = 0; i < index; i++) {
+        steps.push_back({ LinkedListStep::Traverse, i, list.get(i),
+            "Traverse node " + std::to_string(list.get(i)) });
+    }
 
-    void searchVisual(int value);
+    steps.push_back({ LinkedListStep::Delete, index, list.get(index),
+        "Delete node " + std::to_string(list.get(index)) });
 
-    // ===== Control animation =====
-    bool isBusy() const;
-    bool isPaused() const { return paused; }
+    steps.push_back({ LinkedListStep::Done, -1, -1, "Delete completed" });
+}
 
-    void setPaused(bool t) { paused = t; }
-    void togglePaused() { paused = !paused; }
+// ===== Update =====
+void LinkedListController::update(int index, int value) {
+    if (index < 0 || index >= list.getSize()) return;
 
-    void nextStep();
-    void runToEnd();
-    void resetToStart();
+    if (hasSteps()) steps.resize(stepIndex);
+    paused = false;
 
-    bool isAtOperationEnd() const;
-    bool canInteract() const { return !isBusy() || (isPaused() && isAtOperationEnd()); }
+    for (int i = 0; i <= index; i++) {
+        steps.push_back({ LinkedListStep::Traverse, i, list.get(i),
+            "Traverse node " + std::to_string(list.get(i)) });
+    }
 
-    void undo();
-    void redo();
+    steps.push_back({ LinkedListStep::Update, index, value,
+        "Update node at " + std::to_string(index) + " to " + std::to_string(value) });
 
-    // ===== Get data =====
-    LinkedList& getList() { return list; }
+    steps.push_back({ LinkedListStep::Done, -1, -1, "Update completed" });
+}
 
-    int getHighlightIndex() const { return highlightIndex; }
+// ===== Search =====
+void LinkedListController::searchVisual(int value) {
+    if (isBusy()) return;
+    if (hasSteps()) steps.resize(stepIndex);
+    paused = false;
 
-    size_t getStepIndex() const { return stepIndex; }
+    int n = list.getSize();
+    for (int i = 0; i < n; i++) {
+        steps.push_back({ LinkedListStep::Traverse, i, list.get(i),
+            "Check node " + std::to_string(list.get(i)) });
 
-    const LinkedListStep& getCurrentStep() const { return steps[stepIndex - 1]; }
+        if (list.get(i) == value) {
+            steps.push_back({ LinkedListStep::Found, i, value,
+                "Found " + std::to_string(value) + " at index " + std::to_string(i) });
+            steps.push_back({ LinkedListStep::Done, -1, -1, "Search completed" });
+            return;
+        }
+    }
 
-    std::string getMessage() const { return currentMessage; }
+    steps.push_back({ LinkedListStep::NotFound, -1, value,
+        "Value not found" });
 
-    LinkedListStep::Type getLastStepType() const { return lastStepType; }
+    steps.push_back({ LinkedListStep::Done, -1, -1, "Search completed" });
+}
 
-    LinkedListStep::Type peekNextStepType() const;
+// ===== Next Step =====
+void LinkedListController::nextStep() {
+    if (stepIndex >= steps.size()) return;
 
-    int peekNextIndex() const;
-};
+    const LinkedListStep& step = steps[stepIndex];
+
+    highlightIndex = -1;
+    lastStepType = step.type;
+    currentMessage = step.message;
+
+    switch (step.type)
+    {
+    case LinkedListStep::Insert:
+        list.pushBackRaw(step.value);
+        break;
+
+    case LinkedListStep::Delete:
+        list.removeAt(step.index);
+        break;
+
+    case LinkedListStep::Update:
+        list.update(step.index, step.value);
+        break;
+
+    case LinkedListStep::Traverse:
+        highlightIndex = step.index;
+        break;
+
+    case LinkedListStep::Found:
+        highlightIndex = step.index;
+        break;
+
+    case LinkedListStep::NotFound:
+        break;
+
+    case LinkedListStep::Done:
+        break;
+    }
+
+    stepIndex++;
+}
+
+// ===== Run all =====
+void LinkedListController::runToEnd() {
+    while (isBusy()) nextStep();
+    paused = true;
+}
+
+// ===== Reset =====
+void LinkedListController::resetToStart() {
+    stepIndex = 0;
+    list.clear();
+    highlightIndex = -1;
+    paused = true;
+}
+
+// ===== Undo =====
+void LinkedListController::undo() {
+    if (stepIndex <= 0) return;
+    stepIndex--;
+    rebuildHeapUpTo(stepIndex);
+}
+
+// ===== Redo =====
+void LinkedListController::redo() {
+    nextStep();
+}
+
+// ===== Peek =====
+LinkedListStep::Type LinkedListController::peekNextStepType() const {
+    if (stepIndex >= steps.size()) return LinkedListStep::Done;
+    return steps[stepIndex].type;
+}
+
+int LinkedListController::peekNextIndex() const {
+    if (stepIndex >= steps.size()) return -1;
+    return steps[stepIndex].index;
+}
+
+// ===== State =====
+bool LinkedListController::isBusy() const {
+    return stepIndex < steps.size();
+}
+
+bool LinkedListController::isAtOperationEnd() const {
+    if (stepIndex == 0) return true;
+    return steps[stepIndex - 1].type == LinkedListStep::Done;
+}
+
+// ===== Rebuild =====
+void LinkedListController::rebuildHeapUpTo(int k) {
+    list.clear();
+    highlightIndex = -1;
+
+    for (int i = 0; i < k; i++) {
+        const LinkedListStep& step = steps[i];
+
+        lastStepType = step.type;
+        currentMessage = step.message;
+
+        switch (step.type) {
+        case LinkedListStep::Insert:
+            list.pushBackRaw(step.value);
+            break;
+
+        case LinkedListStep::Delete:
+            list.removeAt(step.index);
+            break;
+
+        case LinkedListStep::Update:
+            list.update(step.index, step.value);
+            break;
+
+        case LinkedListStep::Traverse:
+        case LinkedListStep::Found:
+            highlightIndex = step.index;
+            break;
+
+        default:
+            break;
+        }
+    }
+}
