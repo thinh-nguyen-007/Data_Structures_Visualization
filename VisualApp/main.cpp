@@ -5,6 +5,8 @@
 #include "HeapRenderer.hpp"
 #include "AnimationPlayer.hpp"
 #include "UI.hpp"
+#include <filesystem>
+
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({ 1200, 800 }), "Heap Visualizer");
@@ -49,22 +51,23 @@ int main() {
     tableBackground.setFillColor(PastelColor::Yellow);
     tableBackground.setPosition({ 0.f, 600.f });
     // Input Box
-    InputBox insertBox({ 250.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
-    InputBox deleteBox({ 370.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
-    InputBox searchBox({ 490.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
+    InputBox insertBox({ 350.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
+    InputBox deleteBox({ 470.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
+    InputBox searchBox({ 590.f, 40.f }, { 80.f, 36.f }, font, CosmicColor::StellarYellow);
+    InputBox filenameBox({ 10.f, 60.f }, { 150.f, 24.f }, font, CosmicColor::StellarYellow);
     // Labels
     Label insertLabel("Insert", bolderFont, DeepColor::Green);
     Label deleteLabel("Delete", bolderFont, DeepColor::Red);
     Label searchLabel("Search", bolderFont, DeepColor::Indigo);
-    Label buildLabel("Build Max Heap", bolderFont, NeonColor::Ocean, 17, {117.f, 10.f});
-    Label sortLabel("Heap Sort", bolderFont, NeonColor::Lava, 18, {117.f, 64.f});
+    Label buildLabel("Build Max Heap", bolderFont, NeonColor::Ocean, 16, {217.f, 10.f});
+    Label sortLabel("Heap Sort", bolderFont, NeonColor::Lava, 18, {217.f, 64.f});
     // Position labels
     insertLabel.matchHead(insertBox.getBox().getGlobalBounds());
     deleteLabel.matchHead(deleteBox.getBox().getGlobalBounds());
     searchLabel.matchHead(searchBox.getBox().getGlobalBounds());
     // Description box
-    float descX = 600.f, descY = 20.f, descW = 560.f, descH = 80.f;
-    OutputBox descBox({ 600.f, 20.f }, { 560.f, 80.f }, font, { 120, 255, 180 }, "Step Description");
+    float descX = 700.f, descY = 20.f, descW = 460.f, descH = 80.f;
+    OutputBox descBox({ 700.f, 20.f }, { 460.f, 80.f }, font, { 120, 255, 180 }, "Step Description");
     // Button 
     float buttonY = 570.f;
     Button backButton({ 480.f, buttonY }, 28.f, ButtonIcon::SkipBackward);
@@ -72,9 +75,11 @@ int main() {
     Button playButton({ 600.f, buttonY }, 28.f, ButtonIcon::Play);
     Button redoButton({ 660.f, buttonY }, 28.f, ButtonIcon::StepForward);
     Button skipButton({ 720.f, buttonY }, 28.f, ButtonIcon::SkipForward);
-    Button buildButton({ 100.f, 18.f }, 24.f, ButtonIcon::BuildHeap);
-    Button sortButton({ 100.f, 74.f }, 24.f, ButtonIcon::HeapSort);
-    std::vector<Button*> buttons = { &undoButton, &redoButton, &playButton, &backButton, &skipButton, &buildButton, &sortButton };
+    Button buildButton({ 200.f, 18.f }, 24.f, ButtonIcon::BuildHeap);
+    Button sortButton({ 200.f, 74.f }, 24.f, ButtonIcon::HeapSort);
+    Button saveButton({ 100.f, 30.f }, 24.f, ButtonIcon::Save);
+    Button loadButton({ 40.f, 30.f }, 24.f, ButtonIcon::Load);
+    std::vector<Button*> buttons = { &undoButton, &redoButton, &playButton, &backButton, &skipButton, &buildButton, &sortButton, &saveButton, &loadButton };
     // assign actions
     undoButton.setAction(&controller, &HeapController::undo);
     redoButton.setAction(&controller, &HeapController::redo);
@@ -83,12 +88,17 @@ int main() {
     playButton.setAction(&controller, &HeapController::togglePaused);
     buildButton.setAction(&controller, &HeapController::buildMaxHeapVisual);
     sortButton.setAction(&controller, &HeapController::heapSortVisual);
+    
     // Speed scale
     SpeedSlider speedSystem({ 1080.f, 123.f }, 60.f);
     Label speedText("", bolderFont, DeepColor::Red, 12, {1150.f, 119.f});
     // mouse drag
     bool dragging = false;
     sf::Vector2i lastMouse;
+    // file system
+    std::filesystem::create_directory("data");
+    enum class FileMode { None, Save, Load };
+    FileMode fileMode = FileMode::None;
 
     // main loop
     while (window.isOpen()) {
@@ -109,12 +119,49 @@ int main() {
                 if (mouse->button == sf::Mouse::Button::Left) {
                     sf::Vector2f pos = window.mapPixelToCoords(mouse->position);
                     bool clickedUI = false;
+                    // button pressed ?
                     for (auto* b : buttons) {
                         if (b->isEnabled() && b->contains(pos)) {
-                            b->handleClick(pos);
+                            if (b == &saveButton) {
+                                if (fileMode == FileMode::Save) {
+                                    fileMode = FileMode::None;
+                                    filenameBox.setActive(false);
+                                    descBox.setText("");
+                                }
+                                else {
+                                    fileMode = FileMode::Save;
+                                    filenameBox.setActive(true);
+                                    descBox.setText("Enter filename to SAVE");
+                                }
+                            }
+                            else if (b == &loadButton) {
+                                if (fileMode == FileMode::Load) {
+                                    fileMode = FileMode::None;
+                                    filenameBox.setActive(false);
+                                    descBox.setText("");
+                                }
+                                else {
+                                    fileMode = FileMode::Load;
+                                    filenameBox.setActive(true);
+                                    descBox.setText("Enter filename to LOAD");
+                                }
+                            }
+                            else {
+                                b->handleClick(pos);
+                            }
                             clickedUI = true;
                             break; // only one button should trigger
                         }
+                    }
+                    // file input activated ?
+                    if (fileMode != FileMode::None) {
+                        // only change if clicking the box itself
+                        if (filenameBox.getBox().getGlobalBounds().contains(pos)) {
+                            filenameBox.setActive(true);
+                        }
+                    }
+                    else {
+                        filenameBox.setActive(false);
                     }
                     // ONLY drag if not clicking UI
                     bool inBoard = dashboard.getGlobalBounds().contains(pos) || tableBackground.getGlobalBounds().contains(pos);
@@ -143,6 +190,7 @@ int main() {
                 if (!controller.getHeap().empty()) t = controller.getHeap().top();
                 deleteBox.handleDelete(*event, window, t);
                 searchBox.handleInsert(*event, window);
+                if (fileMode != FileMode::None) filenameBox.handleFile(*event, window);
             }
             else {
                 insertBox.setFillColor(DeepColor::Gold);
@@ -150,7 +198,6 @@ int main() {
                 searchBox.setFillColor(DeepColor::Gold);
             }
             if (event->is<sf::Event::KeyPressed>()) {
-                bool allow = controller.canInteract();
                 auto key = event->getIf<sf::Event::KeyPressed>();
                 bool ctrl = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::RControl);
                 bool shift = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::RShift);
@@ -172,7 +219,7 @@ int main() {
                 // HEAPSORT (Ctrl + H)
                 if (ctrl && key->code == sf::Keyboard::Key::H && sortButton.isEnabled()) sortButton.trigger();
                 // INSERT
-                if (key->code == sf::Keyboard::Key::Enter && insertBox.isActive() && allow) {
+                if (key->code == sf::Keyboard::Key::Enter && insertBox.isActive() && controller.canInteract()) {
                     std::string txt = insertBox.getText();
                     if (!txt.empty()) {
                         int x = std::stoi(txt);
@@ -181,19 +228,51 @@ int main() {
                     }
                 }
                 // DELETE (pop)
-                if (key->code == sf::Keyboard::Key::Enter && deleteBox.isActive() && allow) {
+                if (key->code == sf::Keyboard::Key::Enter && deleteBox.isActive() && controller.canInteract()) {
                     int x;
                     controller.pop(x);
                     deleteBox.clear();
                 }
                 // SEARCH
-                if (key->code == sf::Keyboard::Key::Enter && searchBox.isActive() && allow) {
+                if (key->code == sf::Keyboard::Key::Enter && searchBox.isActive() && controller.canInteract()) {
                     std::string txt = searchBox.getText();
                     if (!txt.empty()) {
                         int x = std::stoi(txt);
                         controller.searchVisual(x);
                         searchBox.clear();
                     }
+                }
+                // FILE SYSTEM
+                if (key->code == sf::Keyboard::Key::Enter && filenameBox.isActive() && controller.canInteract()) {
+                    std::string name = filenameBox.getText();
+                    if (name.empty()) {
+                        descBox.setText("Filename empty!");
+                        break;
+                    }
+                    std::string path = "data/" + name + ".txt";
+                    // Modes
+                    if (fileMode == FileMode::Save) {
+                        if (controller.saveToFile(path)) {
+                            descBox.setText("Saved: " + name);
+                        }
+                        else {
+                            descBox.setText("Save failed!");
+                        }
+                    }
+                    else if (fileMode==FileMode::Load) {
+                        if (!std::filesystem::exists(path)) {
+                            descBox.setText("File not found!");
+                        }
+                        else if (controller.loadFromFile(path)) {
+                            descBox.setText("Loaded: " + name);
+                        }
+                        else {
+                            descBox.setText("Load failed!");
+                        }
+                    }
+                    filenameBox.clear();
+                    fileMode = FileMode::None;
+                    filenameBox.setActive(false);
                 }
             }
         }
@@ -215,6 +294,12 @@ int main() {
         playButton.setIcon((controller.isPaused()) ? ButtonIcon::Play : ButtonIcon::Pause);
         buildButton.setEnabled(controller.canInteract() && !controller.getHeap().empty());
         sortButton.setEnabled(controller.canInteract() && !controller.getHeap().empty());
+        // file
+        filenameBox.updateActiveColor();
+        saveButton.setEnabled(controller.canInteract());
+        loadButton.setEnabled(controller.canInteract());
+        saveButton.setSelected(fileMode == FileMode::Save);
+        loadButton.setSelected(fileMode == FileMode::Load);
         // cursor
         sf::Vector2f pos = window.mapPixelToCoords(sf::Mouse::getPosition(window), window.getDefaultView());
         bool clickable = false;
@@ -261,6 +346,7 @@ int main() {
         searchLabel.draw(window);
         buildLabel.draw(window);
         sortLabel.draw(window);
+        filenameBox.draw(window);
         window.display();
     }
     return 0;

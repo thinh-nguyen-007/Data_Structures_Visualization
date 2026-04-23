@@ -17,8 +17,11 @@ public:
 	InputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font, sf::Color fillColor = sf::Color::White);
 	void handleInsert(const sf::Event& event, const sf::RenderWindow& window);
     void handleDelete(const sf::Event& event, const sf::RenderWindow& window, int top);
+    void handleFile(const sf::Event& event, const sf::RenderWindow& window);
     std::string getText() const { return content; }
     bool isActive() const { return active; }
+    void setActive(bool t) { active = t; }
+    void updateActiveColor();
     const sf::RectangleShape& getBox() const { return box; }
     void setFillColor(sf::Color color) { box.setFillColor(color); }
 	void draw(sf::RenderWindow& window);
@@ -66,13 +69,14 @@ struct Label {
 // Text helpers
 void centerText(sf::Text& text, const sf::FloatRect& bounds);
 // Buttons
-enum class ButtonIcon { Play, Pause, StepForward, StepBackward, SkipForward, SkipBackward, BuildHeap, HeapSort };
+enum class ButtonIcon { Play, Pause, StepForward, StepBackward, SkipForward, SkipBackward, BuildHeap, HeapSort, Save, Load };
 class Button {
 private:
     sf::Vector2f center;
     float size;
     ButtonIcon icon;
     bool enabled = true;
+    bool selected = false;
     HeapController* controller = nullptr;
     void (HeapController::* action)() = nullptr;
 public:
@@ -83,6 +87,8 @@ public:
     }
     void setEnabled(bool e) { enabled = e; }
     bool isEnabled() const { return enabled; }
+    void setSelected(bool s) { selected = s; }
+    bool isSelected() const { return selected; }
     void setIcon(ButtonIcon newIcon) { icon = newIcon; }
     // draw
     void draw(sf::RenderWindow& window);

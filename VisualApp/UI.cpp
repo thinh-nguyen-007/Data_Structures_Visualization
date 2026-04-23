@@ -23,6 +23,16 @@ void InputBox::updateText() {
 	float y = box.getPosition().y +	(boxHeight - bounds.size.y) / 2.f - bounds.position.y;
 	text.setPosition({ x, y });
 }
+void InputBox::updateActiveColor() {
+	if (isActive()) {
+		box.setOutlineColor(NeonColor::transparency(NeonColor::Lava, 140));
+		box.setOutlineThickness(5.f);
+	}
+	else {
+		box.setOutlineColor(sf::Color::Black);
+		box.setOutlineThickness(2.f);
+	}
+}
 InputBox::InputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font, 
 	sf::Color fill)
 	: text(font), errorText(font)
@@ -128,6 +138,44 @@ void InputBox::handleDelete(const sf::Event& event, const sf::RenderWindow& wind
 			errorText.setString("No element to pop!");
 			errorText.setFillColor(sf::Color::Red);
 		}
+		updateText();
+	}
+}
+void InputBox::handleFile(const sf::Event& event, const sf::RenderWindow& window) {
+	if (!active) {
+		errorText.setString("");
+		return;
+	}
+	// text input
+	if (event.is<sf::Event::TextEntered>()) {
+		auto txt = event.getIf<sf::Event::TextEntered>();
+		// ignore non-ASCII 
+		if (txt->unicode > 127) return;
+		char c = static_cast<char>(txt->unicode);
+		// Backspace
+		if (txt->unicode == 8) {
+			if (!content.empty()) content.pop_back();
+			errorText.setString("");
+		}
+		// Allowed characters
+		else if (std::isalnum(c) || c == '_' || c == '-') {
+			if (content.size() < 40) {
+				content += c;
+				errorText.setString("");
+			}
+			else {
+				errorText.setString("Max 40 chars!");
+			}
+		}
+		// Ignore Enter (handled in main)
+		else if (txt->unicode == 13) {
+			return;
+		}
+		// Invalid character
+		else {
+			errorText.setString("Invalid char!");
+		}
+		text.setString(content);
 		updateText();
 	}
 }
@@ -281,6 +329,44 @@ void Button::draw(sf::RenderWindow& window) {
 	case ButtonIcon::HeapSort: {
 		auto bars = createBarColumns(center, size, { 0.4f, 0.7f, 1.0f }, { DeepColor::Red, DeepColor::Orange, DeepColor::Green });
 		for (auto& b : bars) window.draw(b);
+		break;
+	}
+	case ButtonIcon::Save: {
+		sf::Color color = (enabled && selected) ? PastelColor::Green : DeepColor::Green;
+		float h = size;
+		float w = size * 0.2f;
+		// vertical shaft
+		sf::RectangleShape shaft({ w, h * 0.5f });
+		shaft.setFillColor(color);
+		shaft.setPosition({ center.x - w / 2.f, center.y - h * 0.65f });
+		// arrow head (triangle)
+		auto tri = createEquilateralTriangle({ center.x, center.y + h * 0.f }, size * 0.6f, 90.f, color);
+		// base bar
+		sf::RectangleShape base({ size * 1.2f, size * 0.12f });
+		base.setFillColor(color);
+		base.setPosition({ center.x - size * 0.6f, center.y + h * 0.35f });
+		window.draw(shaft);
+		window.draw(tri);
+		window.draw(base);
+		break;
+	}
+	case ButtonIcon::Load: {
+		sf::Color color = (enabled && selected) ? PastelColor::Orange : DeepColor::Orange;
+		float h = size;
+		float w = size * 0.2f;
+		// vertical shaft
+		sf::RectangleShape shaft({ w, h * 0.5f });
+		shaft.setFillColor(color);
+		shaft.setPosition({ center.x - w / 2.f, center.y - h * 0.25f });
+		// arrow head (triangle)
+		auto tri = createEquilateralTriangle({ center.x, center.y - h * 0.35f }, size * 0.6f, 270.f, color);
+		// base bar
+		sf::RectangleShape base({ size * 1.2f, size * 0.12f });
+		base.setFillColor(color);
+		base.setPosition({ center.x - size * 0.6f, center.y + h * 0.35f });
+		window.draw(shaft);
+		window.draw(tri);
+		window.draw(base);
 		break;
 	}
 	}
