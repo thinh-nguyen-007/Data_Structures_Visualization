@@ -100,9 +100,9 @@ bool Heap::pop(int& x) {
     return true;
 }
 // search element
-bool Heap::search(int x) const {
-    for (int i = 0; i < size; i++) if (root[i] == x) return true;
-    return false;
+int Heap::search(int x) const {
+    for (int i = 0; i < size; i++) if (root[i] == x) return i;
+    return -1;
 }
 // check empty
 bool Heap::empty() const {
@@ -111,6 +111,10 @@ bool Heap::empty() const {
 // return size
 int Heap::getSize() const {
     return size;
+}
+// return vector of element
+std::vector<int> Heap::getData() const {
+    return std::vector<int>(root, root + size);
 }
 // decrement size
 void Heap::removeLast() {
