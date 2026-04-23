@@ -14,16 +14,15 @@ private:
 private:
 	void updateText();
 public:
-	InputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font,
-        sf::Color fillColor = sf::Color::White);
+	InputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font, sf::Color fillColor = sf::Color::White);
 	void handleInsert(const sf::Event& event, const sf::RenderWindow& window);
     void handleDelete(const sf::Event& event, const sf::RenderWindow& window, int top);
-	std::string getText() const;
+    std::string getText() const { return content; }
+    bool isActive() const { return active; }
+    const sf::RectangleShape& getBox() const { return box; }
+    void setFillColor(sf::Color color) { box.setFillColor(color); }
 	void draw(sf::RenderWindow& window);
 	void clear();
-	bool isActive() const;
-    const sf::RectangleShape& getBox() const;
-    void setFillColor(sf::Color color);
 };
 // Box for output data
 class OutputBox {
@@ -34,16 +33,16 @@ private:
 public:
     OutputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font, sf::Color color = sf::Color::White, const std::string& titleStr = "");
     void setText(const std::string& str);
-    void setTitle(const std::string& title);
+    void setTitle(const std::string& str) { title.setString(str); }
     // color and draw
-    void setFillColor(sf::Color color);
-    void setOutlineColor(sf::Color color);
-    void setTextColor(sf::Color color);
-    void setTitleColor(sf::Color color);
+    void setFillColor(sf::Color color) { box.setFillColor(color); }
+    void setOutlineColor(sf::Color color) { box.setOutlineColor(color); }
+    void setTextColor(sf::Color color) { text.setFillColor(color); }
+    void setTitleColor(sf::Color color) { title.setFillColor(color); }
     void draw(sf::RenderWindow& window);
     // get data
-    const sf::RectangleShape& getBox() const;
-    sf::FloatRect getBounds() const;
+    const sf::RectangleShape& getBox() const { return box; }
+    sf::FloatRect getBounds() const { return box.getGlobalBounds(); }
 };
 // Label text
 struct Label {
@@ -62,19 +61,12 @@ struct Label {
     void centerY(const sf::FloatRect& bounds);
     void matchHead(const sf::FloatRect& bounds, float offset = 5.f);
     // draw
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderWindow& window) { window.draw(text); }
 };
 // Text helpers
 void centerText(sf::Text& text, const sf::FloatRect& bounds);
 // Buttons
-enum class ButtonIcon {
-    Play, 
-    Pause, 
-    StepForward, 
-    StepBackward,
-    SkipForward,
-    SkipBackward
-};
+enum class ButtonIcon { Play, Pause, StepForward, StepBackward, SkipForward, SkipBackward, BuildHeap, HeapSort };
 class Button {
 private:
     sf::Vector2f center;

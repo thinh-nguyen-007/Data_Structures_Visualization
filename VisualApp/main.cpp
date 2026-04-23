@@ -16,6 +16,18 @@ int main() {
     if (!backgroundTex.loadFromFile("assets/bg_trees.png")) return 1;
     if (!font.openFromFile("assets/Roboto.ttf")) return 1;
     if (!bolderFont.openFromFile("assets/RobotoExtraBold.ttf")) return 1;
+    // cursor
+    sf::Cursor arrow(sf::Cursor::Type::Arrow);
+    sf::Cursor hand(sf::Cursor::Type::Hand);
+    sf::Cursor move(sf::Cursor::Type::SizeAll);
+    sf::Cursor* currentCursor = &arrow;
+    window.setMouseCursor(*currentCursor);
+    auto setCursor = [&](sf::Cursor* next) {
+        if (next != currentCursor) {
+            window.setMouseCursor(*next);
+            currentCursor = next;
+        }
+    };
     // background
     sf::Sprite background(backgroundTex);
     auto bgBounds = background.getLocalBounds();
@@ -44,6 +56,8 @@ int main() {
     Label insertLabel("Insert", bolderFont, DeepColor::Green);
     Label deleteLabel("Delete", bolderFont, DeepColor::Red);
     Label searchLabel("Search", bolderFont, DeepColor::Indigo);
+    Label buildLabel("Build Max Heap", bolderFont, NeonColor::Ocean, 17, {117.f, 10.f});
+    Label sortLabel("Heap Sort", bolderFont, NeonColor::Lava, 18, {117.f, 64.f});
     // Position labels
     insertLabel.matchHead(insertBox.getBox().getGlobalBounds());
     deleteLabel.matchHead(deleteBox.getBox().getGlobalBounds());
@@ -58,12 +72,17 @@ int main() {
     Button playButton({ 600.f, buttonY }, 28.f, ButtonIcon::Play);
     Button redoButton({ 660.f, buttonY }, 28.f, ButtonIcon::StepForward);
     Button skipButton({ 720.f, buttonY }, 28.f, ButtonIcon::SkipForward);
+    Button buildButton({ 100.f, 18.f }, 24.f, ButtonIcon::BuildHeap);
+    Button sortButton({ 100.f, 74.f }, 24.f, ButtonIcon::HeapSort);
+    std::vector<Button*> buttons = { &undoButton, &redoButton, &playButton, &backButton, &skipButton, &buildButton, &sortButton };
     // assign actions
     undoButton.setAction(&controller, &HeapController::undo);
     redoButton.setAction(&controller, &HeapController::redo);
     backButton.setAction(&controller, &HeapController::resetToStart);
     skipButton.setAction(&controller, &HeapController::runToEnd);
     playButton.setAction(&controller, &HeapController::togglePaused);
+    buildButton.setAction(&controller, &HeapController::buildMaxHeapVisual);
+    sortButton.setAction(&controller, &HeapController::heapSortVisual);
     // Speed scale
     SpeedSlider speedSystem({ 1080.f, 123.f }, 60.f);
     Label speedText("", bolderFont, DeepColor::Red, 12, {1150.f, 119.f});
@@ -90,25 +109,12 @@ int main() {
                 if (mouse->button == sf::Mouse::Button::Left) {
                     sf::Vector2f pos = window.mapPixelToCoords(mouse->position);
                     bool clickedUI = false;
-                    if (undoButton.isEnabled() && undoButton.contains(pos)) {
-                        undoButton.handleClick(pos);
-                        clickedUI = true;
-                    }
-                    if (redoButton.isEnabled() && redoButton.contains(pos)) {
-                        redoButton.handleClick(pos);
-                        clickedUI = true;
-                    }
-                    if (backButton.isEnabled() && backButton.contains(pos)) {
-                        backButton.handleClick(pos);
-                        clickedUI = true;
-                    }
-                    if (skipButton.isEnabled() && skipButton.contains(pos)) {
-                        skipButton.handleClick(pos);
-                        clickedUI = true;
-                    }
-                    if (playButton.isEnabled() && playButton.contains(pos)) {
-                        playButton.handleClick(pos);
-                        clickedUI = true;
+                    for (auto* b : buttons) {
+                        if (b->isEnabled() && b->contains(pos)) {
+                            b->handleClick(pos);
+                            clickedUI = true;
+                            break; // only one button should trigger
+                        }
                     }
                     // ONLY drag if not clicking UI
                     bool inBoard = dashboard.getGlobalBounds().contains(pos) || tableBackground.getGlobalBounds().contains(pos);
@@ -144,7 +150,7 @@ int main() {
                 searchBox.setFillColor(DeepColor::Gold);
             }
             if (event->is<sf::Event::KeyPressed>()) {
-                bool allow = !controller.isBusy() || (controller.isPaused() && controller.isAtOperationEnd());
+                bool allow = controller.canInteract();
                 auto key = event->getIf<sf::Event::KeyPressed>();
                 bool ctrl = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::RControl);
                 bool shift = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::RShift);
@@ -161,6 +167,10 @@ int main() {
                 }
                 // PAUSE/PLAY (Ctrl + P)
                 if (ctrl && key->code == sf::Keyboard::Key::P && playButton.isEnabled()) playButton.trigger();
+                // BUILD max heap (Ctrl + B) 
+                if (ctrl && key->code == sf::Keyboard::Key::B && buildButton.isEnabled()) buildButton.trigger();
+                // HEAPSORT (Ctrl + H)
+                if (ctrl && key->code == sf::Keyboard::Key::H && sortButton.isEnabled()) sortButton.trigger();
                 // INSERT
                 if (key->code == sf::Keyboard::Key::Enter && insertBox.isActive() && allow) {
                     std::string txt = insertBox.getText();
@@ -203,6 +213,25 @@ int main() {
         skipButton.setEnabled(redoButton.isEnabled());
         playButton.setEnabled(controller.isBusy());
         playButton.setIcon((controller.isPaused()) ? ButtonIcon::Play : ButtonIcon::Pause);
+        buildButton.setEnabled(controller.canInteract() && !controller.getHeap().empty());
+        sortButton.setEnabled(controller.canInteract() && !controller.getHeap().empty());
+        // cursor
+        sf::Vector2f pos = window.mapPixelToCoords(sf::Mouse::getPosition(window), window.getDefaultView());
+        bool clickable = false;
+        for (auto* b : buttons) {
+            if (b->isEnabled() && b->contains(pos)) {
+                clickable = true;
+                break;
+            }
+        }
+        if (speedSystem.contains(pos)) clickable = true;
+        if (insertBox.getBox().getGlobalBounds().contains(pos) || 
+            deleteBox.getBox().getGlobalBounds().contains(pos) ||
+            searchBox.getBox().getGlobalBounds().contains(pos)) clickable = true;
+        // edit cursor
+        if (dragging) setCursor(&move);
+        else if (clickable) setCursor(&hand);
+        else setCursor(&arrow);
         // ================= RENDER =================
         window.clear();
         window.draw(background);
@@ -217,11 +246,7 @@ int main() {
         renderer.drawTable(window, controller, font);
         // Header fixed UI
         // button
-        undoButton.draw(window);
-        playButton.draw(window);
-        backButton.draw(window);
-        skipButton.draw(window);
-        redoButton.draw(window);
+        for (auto* b : buttons) b->draw(window);
         // speed scaler
         speedSystem.draw(window);
         speedText.draw(window);
@@ -234,6 +259,8 @@ int main() {
         deleteLabel.draw(window);
         searchBox.draw(window);
         searchLabel.draw(window);
+        buildLabel.draw(window);
+        sortLabel.draw(window);
         window.display();
     }
     return 0;

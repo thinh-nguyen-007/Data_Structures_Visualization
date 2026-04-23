@@ -1,7 +1,6 @@
 // UI.cpp
 #include "UI.hpp"
 #include "Design.hpp"
-
 // InputBox
 void InputBox::updateText() {
 	float padding = 6.f; 
@@ -132,9 +131,6 @@ void InputBox::handleDelete(const sf::Event& event, const sf::RenderWindow& wind
 		updateText();
 	}
 }
-std::string InputBox::getText() const {
-	return content;
-}
 void InputBox::draw(sf::RenderWindow& window) {
 	window.draw(box);
 	window.draw(text);
@@ -144,15 +140,6 @@ void InputBox::clear() {
 	content.clear();
 	text.setString(content);
 	updateText();
-}
-bool InputBox::isActive() const {
-	return active;
-}
-const sf::RectangleShape& InputBox::getBox() const {
-	return box;
-}
-void InputBox::setFillColor(sf::Color color) {
-	box.setFillColor(color);
 }
 // OutputBox
 OutputBox::OutputBox(sf::Vector2f position, sf::Vector2f size, const sf::Font& font, 
@@ -180,31 +167,10 @@ void OutputBox::setText(const std::string& str) {
 	float y = bounds.position.y + (bounds.size.y - tb.size.y) / 2.f	- tb.position.y;
 	text.setPosition({ x, y });
 }
-void OutputBox::setTitle(const std::string& str) {
-	title.setString(str);
-}
-void OutputBox::setFillColor(sf::Color color) {
-	box.setFillColor(color);
-}
-void OutputBox::setOutlineColor(sf::Color color) {
-	box.setOutlineColor(color);
-}
-void OutputBox::setTextColor(sf::Color color) {
-	text.setFillColor(color);
-}
-void OutputBox::setTitleColor(sf::Color color) {
-	title.setFillColor(color);
-}
 void OutputBox::draw(sf::RenderWindow& window) {
 	window.draw(box);
 	window.draw(text);
 	window.draw(title);
-}
-const sf::RectangleShape& OutputBox::getBox() const {
-	return box;
-}
-sf::FloatRect OutputBox::getBounds() const {
-	return box.getGlobalBounds();
 }
 // Label
 Label::Label(const std::string& str, const sf::Font& font, sf::Color color, unsigned int charSize,
@@ -232,23 +198,15 @@ void Label::matchHead(const sf::FloatRect& bounds, float offset) {
 	matchAbove(bounds, offset);
 	centerX(bounds);
 }
-// draw label
-void Label::draw(sf::RenderWindow& window) {
-	window.draw(text);
-}
 // Text helpers
 void centerText(sf::Text& text, const sf::FloatRect& bounds) {
 	sf::FloatRect textBounds = text.getLocalBounds();
-
 	float x = bounds.position.x + (bounds.size.x - textBounds.size.x) / 2.f;
-	float y = bounds.position.y + (bounds.size.y - textBounds.size.y) / 2.f
-		- textBounds.position.y;
-
+	float y = bounds.position.y + (bounds.size.y - textBounds.size.y) / 2.f - textBounds.position.y;
 	text.setPosition({ x, y });
 }
 // Button
 void Button::draw(sf::RenderWindow& window) {
-
 	switch (icon) {
 	case ButtonIcon::Play: {
 		sf::Color color = (enabled) ? sf::Color::Green : DeepColor::Green;
@@ -313,6 +271,16 @@ void Button::draw(sf::RenderWindow& window) {
 		bar.setFillColor(color);
 		bar.setPosition({ center.x - offset - size * 0.5f - barWidth,center.y - barHeight / 2.f });
 		window.draw(bar);
+		break;
+	}
+	case ButtonIcon::BuildHeap: {
+		auto bars = createBarColumns(center, size, { 0.5f, 0.9f, 0.65f }, { DeepColor::Green, DeepColor::Indigo, DeepColor::Red });
+		for (auto& b : bars) window.draw(b);
+		break;
+	}
+	case ButtonIcon::HeapSort: {
+		auto bars = createBarColumns(center, size, { 0.4f, 0.7f, 1.0f }, { DeepColor::Red, DeepColor::Orange, DeepColor::Green });
+		for (auto& b : bars) window.draw(b);
 		break;
 	}
 	}

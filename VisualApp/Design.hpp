@@ -122,3 +122,27 @@ inline sf::ConvexShape createEquilateralTriangle(sf::Vector2f center, float side
     tri.setFillColor(color);
     return tri;
 }
+// Draw vertical bars centered at a position
+inline std::vector<sf::RectangleShape> createBarColumns(sf::Vector2f center, float size, 
+    const std::vector<float>& heights, // height ratio (0 to 1)
+    const std::vector<sf::Color>& colors) {
+    std::vector<sf::RectangleShape> bars;
+    size_t n = heights.size();
+    if (n == 0 || colors.size() != n) return bars;
+    float totalWidth = size;
+    float barWidth = totalWidth / (n * 1.5f);
+    float gap = barWidth * 0.5f;
+    float fullWidth = n * barWidth + (n - 1) * gap;
+    float startX = center.x - fullWidth / 2.f;
+    float baseY = center.y + size / 2.f;
+    for (size_t i = 0; i < n; i++) {
+        float h = std::clamp(heights[i], 0.f, 1.f) * size;
+        sf::RectangleShape bar({ barWidth, h });
+        bar.setFillColor(colors[i]);
+        float x = startX + i * (barWidth + gap);
+        float y = baseY - h;
+        bar.setPosition({ x, y });
+        bars.push_back(bar);
+    }
+    return bars;
+}
