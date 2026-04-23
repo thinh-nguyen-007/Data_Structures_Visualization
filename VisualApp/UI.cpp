@@ -214,16 +214,6 @@ Label::Label(const std::string& str, const sf::Font& font, sf::Color color, unsi
 	text.setCharacterSize(charSize);
 	text.setFillColor(color);
 }
-// Edit label
-void Label::setPosition(sf::Vector2f p) {
-	text.setPosition(p);
-}
-void Label::setColor(sf::Color color) {
-	text.setFillColor(color);
-}
-void Label::setString(const std::string& s) {
-	text.setString(s);
-}
 // match with a box
 void Label::matchAbove(const sf::FloatRect& bounds, float offset) {
 	text.setPosition({ bounds.position.x, bounds.position.y - text.getCharacterSize() - offset });
@@ -255,4 +245,126 @@ void centerText(sf::Text& text, const sf::FloatRect& bounds) {
 		- textBounds.position.y;
 
 	text.setPosition({ x, y });
+}
+// Button
+void Button::draw(sf::RenderWindow& window) {
+
+	switch (icon) {
+	case ButtonIcon::Play: {
+		sf::Color color = (enabled) ? sf::Color::Green : DeepColor::Green;
+		auto tri = createEquilateralTriangle(center, size, 0.f, color);
+		window.draw(tri);
+		break;
+	}
+	case ButtonIcon::StepBackward: {
+		sf::Color color = enabled ? DeepColor::Indigo : PastelColor::Blue;
+		auto tri = createEquilateralTriangle(center, size, 180.f, color);
+		window.draw(tri);
+		break;
+	}
+	case ButtonIcon::Pause: {
+		float w = size / 4.f;
+		float h = size;
+		sf::RectangleShape left({ w, h });
+		sf::RectangleShape right({ w, h });
+		left.setPosition({ center.x - w * 1.5f, center.y - h / 2.f });
+		right.setPosition({ center.x + w * 0.5f, center.y - h / 2.f });
+		left.setFillColor(sf::Color::Red);
+		right.setFillColor(sf::Color::Red);
+		window.draw(left);
+		window.draw(right);
+		break;
+	}
+	case ButtonIcon::StepForward: {
+		sf::Color color = enabled ? DeepColor::Indigo : PastelColor::Blue;
+		auto tri = createEquilateralTriangle(center, size, 0.f, color);
+		window.draw(tri);
+		break;
+	}
+	case ButtonIcon::SkipForward: {
+		sf::Color color = enabled ? DeepColor::Purple : PastelColor::Purple;
+		float offset = size * 0.35f;
+		// two triangles
+		auto left = createEquilateralTriangle(center - sf::Vector2f(offset, 0.f), size, 0.f, color);
+		auto right = createEquilateralTriangle(center + sf::Vector2f(offset, 0.f), size, 0.f, color);
+		window.draw(left);
+		window.draw(right);
+		// slim vertical bar (right side)
+		float barWidth = size * 0.12f;
+		float barHeight = size;
+		sf::RectangleShape bar({ barWidth, barHeight });
+		bar.setFillColor(color);
+		bar.setPosition({ center.x + offset + size * 0.5f, center.y - barHeight / 2.f });
+		window.draw(bar);
+		break;
+	}
+	case ButtonIcon::SkipBackward: {
+		sf::Color color = enabled ? DeepColor::Purple : PastelColor::Purple;
+		float offset = size * 0.35f;
+		// two triangles
+		auto left = createEquilateralTriangle(center - sf::Vector2f(offset, 0.f), size, 180.f, color);
+		auto right = createEquilateralTriangle(center + sf::Vector2f(offset, 0.f), size, 180.f, color);
+		window.draw(left);
+		window.draw(right);
+		// slim vertical bar (left side)
+		float barWidth = size * 0.12f;
+		float barHeight = size;
+		sf::RectangleShape bar({ barWidth, barHeight });
+		bar.setFillColor(color);
+		bar.setPosition({ center.x - offset - size * 0.5f - barWidth,center.y - barHeight / 2.f });
+		window.draw(bar);
+		break;
+	}
+	}
+}
+// Speed scaling system
+SpeedSlider::SpeedSlider(sf::Vector2f pos, float width) {
+	bar.setPosition(pos);
+	bar.setSize({ width, 6.f });
+	bar.setFillColor(sf::Color::Black);
+	knob.setRadius(8.f);
+	knob.setOrigin({ 8.f, 8.f });
+	knob.setFillColor(sf::Color::Red);
+	t = std::log(value / min) / std::log(max / min);
+	updateKnob();
+}
+void SpeedSlider::updateKnob() {
+	float x = bar.getPosition().x + t * bar.getSize().x;
+	float y = bar.getPosition().y + bar.getSize().y / 2.f;
+	knob.setPosition({ x, y });
+}
+void SpeedSlider::handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
+	auto uiView = window.getDefaultView();
+	if (event.is<sf::Event::MouseButtonPressed>()) {
+		auto m = event.getIf<sf::Event::MouseButtonPressed>();
+		sf::Vector2f pos = window.mapPixelToCoords(m->position, uiView);
+		if (knob.getGlobalBounds().contains(pos)) {
+			dragging = true;
+			grabOffsetX = pos.x - knob.getPosition().x;
+		}
+		else if (bar.getGlobalBounds().contains(pos)) {
+			// click anywhere on bar → jump
+			float left = bar.getPosition().x;
+			float width = bar.getSize().x;
+			t = (pos.x - left) / width;
+			t = std::clamp(t, 0.f, 1.f);
+			value = min * std::pow(max / min, t);
+			updateKnob();
+		}
+	}
+	if (event.is<sf::Event::MouseButtonReleased>()) {
+		dragging = false;
+	}
+	if (event.is<sf::Event::MouseMoved>() && dragging) {
+		auto m = event.getIf<sf::Event::MouseMoved>();
+		sf::Vector2f pos = window.mapPixelToCoords(m->position, uiView);
+		float x = pos.x - grabOffsetX;
+		float left = bar.getPosition().x;
+		float right = left + bar.getSize().x;
+		x = std::clamp(x, left, right);
+		float width = bar.getSize().x;
+		t = (x - left) / width;
+		value = min * std::pow(max / min, t);
+		updateKnob();
+	}
 }

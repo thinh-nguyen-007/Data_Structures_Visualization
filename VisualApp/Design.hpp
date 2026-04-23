@@ -106,3 +106,19 @@ inline void drawArrow(sf::RenderWindow& window, sf::Vertex line[2], sf::Color co
     window.draw(line, 2, sf::PrimitiveType::Lines);
     window.draw(arrowhead);
 }
+// create Equilateral Triangle
+inline sf::ConvexShape createEquilateralTriangle(sf::Vector2f center, float side, float rotationDeg, sf::Color color)
+{
+    sf::ConvexShape tri;
+    tri.setPointCount(3);
+    float R = side / std::sqrt(3.f); // circumradius
+    float baseAngle = rotationDeg * 3.14159265f / 180.f;
+    for (int i = 0; i < 3; i++) {
+        float angle = baseAngle + i * 2.f * 3.14159265f / 3.f;
+        float x = center.x + R * std::cos(angle);
+        float y = center.y + R * std::sin(angle);
+        tri.setPoint(i, { x, y });
+    }
+    tri.setFillColor(color);
+    return tri;
+}

@@ -19,9 +19,12 @@ static sf::Vector2f computeNodePos(int i, float width) {
 void AnimationPlayer::update(float dt, HeapController& controller, float width) {
     accumulator += dt;
     // only move forward in timeline
-    if (controller.isBusy() && accumulator >= delay) {
+    if (!controller.isPaused() && controller.isBusy() && accumulator >= delay) {
         controller.nextStep();
         const HeapStep& step = controller.getCurrentStep();
+        if (step.type == HeapStep::Done) {
+            controller.setPaused(true);
+        }
         if (step.type == HeapStep::Insert) {
             int idx = controller.getHeap().getSize() - 1;
             spawnInsertEffect(idx, width);
