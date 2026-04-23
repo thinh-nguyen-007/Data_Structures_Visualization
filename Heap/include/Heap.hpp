@@ -1,5 +1,6 @@
 // Heap.hpp
 #pragma once
+#include <vector>
 
 class Heap {
 private:
@@ -20,9 +21,10 @@ public: // basic interfaces
     bool pop(int& x); 
     void pop();
     int top() const;
-    bool search(int x) const;
+    int search(int x) const;
     bool empty() const;
     int getSize() const;
+    std::vector<int> getData() const;
     void removeLast();
     void clear();
     int operator[](int id) const;
