@@ -27,7 +27,7 @@ private:
 	std::vector<HeapStep> steps;
 	size_t stepIndex = 0;
 	HeapStep::Type lastStepType = HeapStep::Done;
-	bool paused = false;
+	bool paused = true;
 	// highlight node index
 	int highlightA = -1;
 	int highlightB = -1;
@@ -70,5 +70,7 @@ public:
 	HeapStep::Type peekNextStepType() const;
 	int peekNextA() const;
 	// file consistence
-
+	bool loadFromFile(const std::string& filename);
+	bool saveToFile(const std::string& filename);
+	void clear();
 };

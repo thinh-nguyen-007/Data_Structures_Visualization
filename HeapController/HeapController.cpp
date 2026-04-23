@@ -5,6 +5,16 @@
 HeapController::HeapController() {
 	currentMessage = "Ready";
 }
+void HeapController::clear() {
+	heap.clear();
+	steps.clear();
+	stepIndex = 0;
+	lastStepType = HeapStep::Done;
+	paused = true;
+	highlightA = -1;
+	highlightB = -1;
+	currentMessage.clear();
+}
 void HeapController::push(int x) {
 	if (hasSteps()) steps.resize(stepIndex);
 	paused = false;
@@ -209,4 +219,25 @@ void HeapController::heapSortVisual() {
 		heapifySteps(temp, 0, end);
 	}
 	steps.push_back({ HeapStep::Done, -1, -1, "Heap Sort completed" });
+}
+// file consistence
+bool HeapController::loadFromFile(const std::string& filename) {
+	std::ifstream fin(filename);
+	if (!fin.is_open()) return false;
+	std::vector<int> input;
+	int x;
+	while (fin >> x) input.push_back(x);
+	if (input.empty()) return false; // no data
+	clear();
+	for (int i : input) heap.push(i);
+	return true;
+}
+bool HeapController::saveToFile(const std::string& filename) {
+	std::ofstream fout(filename);
+	if (!fout.is_open()) return false;
+	const auto& data = heap.getData();
+	for (int i : data) {
+		fout << i << " ";
+	}
+	return true;
 }
