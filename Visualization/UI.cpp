@@ -247,3 +247,50 @@ void Button::draw(sf::RenderWindow& window) {
         break;
     }
 }
+
+// ===== SPEED SLIDER =====
+SpeedSlider::SpeedSlider(sf::Vector2f pos, float width) {
+    bar.setPosition(pos);
+    bar.setSize({ width, 4.f });
+    bar.setFillColor(sf::Color::Black);
+
+    knob.setRadius(8.f);
+    knob.setOrigin({ 8.f, 8.f });
+    knob.setFillColor(sf::Color::Red);
+
+    updateKnob();
+}
+
+void SpeedSlider::updateKnob() {
+    float x = bar.getPosition().x + t * bar.getSize().x;
+    float y = bar.getPosition().y + bar.getSize().y / 2.f;
+    knob.setPosition({ x, y });
+
+    value = min + t * (max - min);
+}
+
+void SpeedSlider::handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
+    sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+    if (event.type == sf::Event::MouseButtonPressed) {
+        if (knob.getGlobalBounds().contains(mouse)) {
+            dragging = true;
+            grabOffsetX = knob.getPosition().x - mouse.x;
+        }
+    }
+
+    if (event.type == sf::Event::MouseButtonReleased) {
+        dragging = false;
+    }
+
+    if (event.type == sf::Event::MouseMoved && dragging) {
+        float x = mouse.x + grabOffsetX;
+        float left = bar.getPosition().x;
+        float right = left + bar.getSize().x;
+
+        x = std::max(left, std::min(x, right));
+        t = (x - left) / bar.getSize().x;
+
+        updateKnob();
+    }
+}
