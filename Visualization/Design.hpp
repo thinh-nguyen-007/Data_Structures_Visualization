@@ -85,3 +85,31 @@ inline void drawArrow(sf::RenderWindow& window, sf::Vector2f start, sf::Vector2f
     window.draw(line, 2, sf::Lines);
     window.draw(arrowhead);
 }
+
+// ===== Design Play Button =====
+inline sf::ConvexShape createEquilateralTriangle(
+    sf::Vector2f center,
+    float size,
+    float rotationDeg,
+    sf::Color color)
+{
+    sf::ConvexShape tri;
+    tri.setPointCount(3);
+
+    float R = size; // bán kính
+
+    float base = rotationDeg * 3.14159265f / 180.f;
+
+    for (int i = 0; i < 3; i++) {
+        float angle = base + i * 2.f * 3.14159265f / 3.f;
+
+        float x = center.x + R * std::cos(angle);
+        float y = center.y + R * std::sin(angle);
+
+        tri.setPoint(i, { x, y });
+    }
+
+    tri.setFillColor(color);
+
+    return tri;
+}

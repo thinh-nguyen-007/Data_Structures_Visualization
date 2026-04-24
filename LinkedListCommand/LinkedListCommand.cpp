@@ -1,4 +1,4 @@
-#include "LinkedListController.hpp"
+#include "LinkedListCommand.hpp"
 
 // ===== Constructor =====
 LinkedListController::LinkedListController() {
