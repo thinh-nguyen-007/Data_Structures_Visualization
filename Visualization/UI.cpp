@@ -161,3 +161,89 @@ void centerText(sf::Text& text, const sf::FloatRect& bounds) {
     text.setPosition(bounds.position.x + bounds.size.x / 2.f,
                      bounds.position.y + bounds.size.y / 2.f);
 }
+
+// ===== BUTTON =====
+void Button::draw(sf::RenderWindow& window) {
+    sf::CircleShape shape(size);
+    shape.setOrigin({ size, size });
+    shape.setPosition(center);
+
+    if (!enabled)
+        shape.setFillColor(sf::Color(150, 150, 150));
+    else if (selected)
+        shape.setFillColor(sf::Color(200, 255, 200));
+    else
+        shape.setFillColor(sf::Color(220, 220, 220));
+
+    shape.setOutlineColor(sf::Color::Black);
+    shape.setOutlineThickness(2.f);
+
+    window.draw(shape);
+
+    // simple icon drawing
+    sf::RectangleShape rect;
+    rect.setFillColor(sf::Color::Black);
+
+    switch (icon) {
+    case ButtonIcon::Play:
+        window.draw(createEquilateralTriangle(center, size, 90.f, sf::Color::Black));
+        break;
+
+    case ButtonIcon::Pause:
+        rect.setSize({ 5.f, size });
+        rect.setPosition(center.x - 8.f, center.y - size / 2);
+        window.draw(rect);
+        rect.setPosition(center.x + 3.f, center.y - size / 2);
+        window.draw(rect);
+        break;
+
+    case ButtonIcon::StepForward:
+        window.draw(createEquilateralTriangle(center, size, 90.f, sf::Color::Black));
+        rect.setSize({ 3.f, size });
+        rect.setPosition(center.x + size / 2 - 3, center.y - size / 2);
+        window.draw(rect);
+        break;
+
+    case ButtonIcon::StepBackward:
+        window.draw(createEquilateralTriangle(center, size, -90.f, sf::Color::Black));
+        rect.setSize({ 3.f, size });
+        rect.setPosition(center.x - size / 2, center.y - size / 2);
+        window.draw(rect);
+        break;
+
+    case ButtonIcon::Insert:
+        rect.setSize({ size, 4.f });
+        rect.setPosition(center.x - size / 2, center.y - 2.f);
+        window.draw(rect);
+        rect.setSize({ 4.f, size });
+        rect.setPosition(center.x - 2.f, center.y - size / 2);
+        window.draw(rect);
+        break;
+
+    case ButtonIcon::Delete:
+        rect.setSize({ size, 4.f });
+        rect.setPosition(center.x - size / 2, center.y - 2.f);
+        window.draw(rect);
+        break;
+
+    case ButtonIcon::Search:
+        {
+            sf::CircleShape c(size / 2);
+            c.setOrigin(size / 2, size / 2);
+            c.setPosition(center);
+            c.setFillColor(sf::Color::Transparent);
+            c.setOutlineColor(sf::Color::Black);
+            c.setOutlineThickness(2.f);
+            window.draw(c);
+
+            rect.setSize({ size / 2, 3.f });
+            rect.setPosition(center.x + size / 4, center.y + size / 4);
+            rect.setRotation(sf::degrees(45));
+            window.draw(rect);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
