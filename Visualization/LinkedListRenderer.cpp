@@ -3,7 +3,7 @@
 #include <vector>
 
 void LinkedListRenderer::draw(sf::RenderWindow& window,
-                              LinkedListCommand& controller,
+                              LinkedListController& controller,
                               Animation& anim,
                               const sf::Font& font)
 {
@@ -103,7 +103,7 @@ void LinkedListRenderer::draw(sf::RenderWindow& window,
 
 // ===== optional table view =====
 void LinkedListRenderer::drawTable(sf::RenderWindow& window,
-                                   LinkedListCommand& controller,
+                                   LinkedListController& controller,
                                    const sf::Font& font)
 {
     LinkedList& list = controller.getList();
