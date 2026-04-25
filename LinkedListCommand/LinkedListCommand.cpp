@@ -227,3 +227,32 @@ void LinkedListController::rebuildHeapUpTo(int k) {
         }
     }
 }
+
+void LinkedListController::saveToFile(const std::string& filename) {
+    std::ofstream out(filename);
+
+    for (int i = 0; i < list.getSize(); i++) {
+        out << list.get(i) << " ";
+    }
+
+    currentMessage = "Saved to " + filename;
+}
+
+void LinkedListController::loadFromFile(const std::string& filename) {
+    std::ifstream in(filename);
+
+    if (!in.is_open()) {
+        currentMessage = "Cannot open file";
+        return;
+    }
+
+    // reset everything
+    resetToStart();
+
+    int x;
+    while (in >> x) {
+        push(x);
+    }
+
+    currentMessage = "Loaded from " + filename;
+}

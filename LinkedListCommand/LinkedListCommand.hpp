@@ -100,4 +100,7 @@ public:
     LinkedListStep::Type peekNextStepType() const;
 
     int peekNextIndex() const;
+
+    void saveToFile(const std::string& filename);
+    void loadFromFile(const std::string& filename);
 };
