@@ -51,4 +51,62 @@ int main() {
     btnStepB.setAction(&controller, &LinkedListController::undo);
     btnSkipF.setAction(&controller, &LinkedListController::runToEnd);
     btnSkipB.setAction(&controller, &LinkedListController::resetToStart);
+
+    // ===== SPEED =====
+    SpeedSlider slider({ 50, 180 }, 250);
+
+    sf::Clock clock;
+
+    // ===== LOOP =====
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+
+            if (event.type == sf::Event::Closed)
+                window.close();
+
+            // ===== INPUT =====
+            input.handleInsert(event, window);
+
+            // ===== BUTTON CLICK =====
+            if (event.type == sf::Event::MouseButtonPressed) {
+                sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+                btnPlay.handleClick(mouse);
+                btnStepF.handleClick(mouse);
+                btnStepB.handleClick(mouse);
+                btnSkipF.handleClick(mouse);
+                btnSkipB.handleClick(mouse);
+
+                btnInsert.handleClick(mouse);
+                btnDelete.handleClick(mouse);
+                btnSearch.handleClick(mouse);
+
+                // ===== INSERT MULTIPLE =====
+                if (btnInsert.contains(mouse)) {
+                    std::vector<int> vals = parseInput(input.getText());
+                    for (int x : vals) controller.push(x);
+                    input.clear();
+                }
+
+                // ===== DELETE =====
+                if (btnDelete.contains(mouse)) {
+                    int x;
+                    controller.pop(x);
+                }
+
+                // ===== SEARCH =====
+                if (btnSearch.contains(mouse)) {
+                    std::vector<int> vals = parseInput(input.getText());
+                    if (!vals.empty())
+                        controller.searchVisual(vals[0]);
+                }
+            }
+
+            // ===== SPEED =====
+            slider.handleEvent(event, window);
+        }
+
+        float dt = clock.restart().asSeconds();
+    }
 }
