@@ -45,6 +45,9 @@ int main() {
     Button btnDelete({ 440, 120 }, 22, ButtonIcon::Delete);
     Button btnSearch({ 500, 120 }, 22, ButtonIcon::Search);
 
+    Button btnSave({ 580, 120 }, 22, ButtonIcon::Save);
+    Button btnLoad({ 640, 120 }, 22, ButtonIcon::Load);
+
     // ===== BIND ACTION =====
     btnPlay.setAction(&controller, &LinkedListController::togglePaused);
     btnStepF.setAction(&controller, &LinkedListController::nextStep);
@@ -82,6 +85,9 @@ int main() {
                 btnDelete.handleClick(mouse);
                 btnSearch.handleClick(mouse);
 
+                btnSave.handleClick(mouse);
+                btnLoad.handleClick(mouse);
+
                 // ===== INSERT MULTIPLE =====
                 if (btnInsert.contains(mouse)) {
                     std::vector<int> vals = parseInput(input.getText());
@@ -100,6 +106,16 @@ int main() {
                     std::vector<int> vals = parseInput(input.getText());
                     if (!vals.empty())
                         controller.searchVisual(vals[0]);
+                }
+
+                // ===== SAVE =====
+                if (btnSave.contains(mouse)) {
+                    controller.saveToFile("data.txt");
+                }
+
+                // ===== LOAD =====
+                if (btnLoad.contains(mouse)) {
+                    controller.loadFromFile("data.txt");
                 }
             }
 
@@ -133,6 +149,9 @@ int main() {
         btnInsert.draw(window);
         btnDelete.draw(window);
         btnSearch.draw(window);
+
+        btnSave.draw(window);
+        btnLoad.draw(window);
 
         slider.draw(window);
 

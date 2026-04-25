@@ -2,6 +2,7 @@
 #include "LinkedList.hpp"
 #include <vector>
 #include <string>
+#include <fstream>
 
 // ===== Step =====
 struct LinkedListStep {
