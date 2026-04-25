@@ -108,5 +108,36 @@ int main() {
         }
 
         float dt = clock.restart().asSeconds();
+
+        // ===== UPDATE =====
+        animation.setDelay(1.f / slider.getValue());
+        animation.update(dt, controller, window.getSize().x);
+
+        // ===== RENDER =====
+        window.clear(sf::Color(30, 30, 45));
+
+        renderer.draw(window, controller, animation, font);
+        renderer.drawTable(window, controller, font);
+
+        input.draw(window);
+
+        output.setText(controller.getMessage());
+        output.draw(window);
+
+        btnPlay.draw(window);
+        btnStepF.draw(window);
+        btnStepB.draw(window);
+        btnSkipF.draw(window);
+        btnSkipB.draw(window);
+
+        btnInsert.draw(window);
+        btnDelete.draw(window);
+        btnSearch.draw(window);
+
+        slider.draw(window);
+
+        window.display();
     }
+
+    return 0;
 }
