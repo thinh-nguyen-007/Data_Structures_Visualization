@@ -4,11 +4,16 @@ CXXFLAGS = -std=c++20 \
 	-Iinclude/Tree \
 	-Iinclude/AVLTreeVisualization \
 	-Iinclude/snapshots \
+	-Iinclude/DrawTextures \
+	-Iinclude/FastMathFunctions \
+	-Iinclude/AVLTreeVisualization/Items \
+	-Iinclude/AVLTreeVisualization/Scenes \
 	-I$(RAYLIB_DIR)/include -O2
 LDFLAGS = -L$(RAYLIB_DIR)/lib -lraylib -lopengl32 -lgdi32 -lwinmm -luser32
 
 SRC = $(wildcard src/*.cpp \
-				 src/*/*.cpp)
+				 src/*/*.cpp \
+				 src/*/*/*.cpp)
 TARGET = run.exe
 
 all: clean $(TARGET)
