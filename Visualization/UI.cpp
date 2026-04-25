@@ -243,6 +243,34 @@ void Button::draw(sf::RenderWindow& window) {
         }
         break;
 
+    case ButtonIcon::Save:
+        {
+            sf::RectangleShape rect({ size, size });
+            rect.setOrigin({ size / 2, size / 2 });
+            rect.setPosition(center);
+            rect.setFillColor(sf::Color::Black);
+            window.draw(rect);
+        }
+        break;
+
+    case ButtonIcon::Load:
+        {
+            sf::RectangleShape rect({ size, size / 2 });
+            rect.setOrigin({ size / 2, size / 4 });
+            rect.setPosition(center.x, center.y + size / 4);
+            rect.setFillColor(sf::Color::Black);
+            window.draw(rect);
+
+            // arrow up
+            window.draw(createEquilateralTriangle(
+                { center.x, center.y - size / 4 },
+                size / 2,
+                0.f,
+                sf::Color::Black
+            ));
+        }
+        break;
+
     default:
         break;
     }
