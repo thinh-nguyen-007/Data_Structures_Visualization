@@ -7,13 +7,11 @@ Graph::~Graph() {}
 void Graph::Init() {}
 
 void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
-  // 1. Draw Edges
+  // 1. Draw Edge lines and arrowheads (first pass)
   for (const auto &edge : edges) {
-    // Get the coordinates from the connected vertices
     Vector2 startPos = vertices[edge.idx.first].location;
     Vector2 endPos = vertices[edge.idx.second].location;
 
-    // Check if this edge is part of the TSP path
     bool isTSP = false;
     bool isExploring = false;
 
@@ -21,7 +19,6 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
       for (size_t i = 0; i < currentTSPPath.size() - 1; i++) {
         int u = currentTSPPath[i];
         int v = currentTSPPath[i + 1];
-        // STRICT DIRECTION CHECK for directed graphs
         if (edge.idx.first == u && edge.idx.second == v) {
           isTSP = true;
           break;
@@ -44,7 +41,6 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
     Color edgeColor = isTSP ? GREEN : (isExploring ? ORANGE : defaultEdgeColor);
     float edgeThickness = isTSP || isExploring ? 8.0f : 4.0f;
 
-    // Check if reverse edge exists
     bool hasReverse = false;
     for (const auto &other : edges) {
       if (other.idx.first == edge.idx.second &&
@@ -64,35 +60,68 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
       endPos.y += cos(angle) * shiftAmount;
     }
 
-    // Draw the connecting line
     DrawLineEx(startPos, endPos, edgeThickness, edgeColor);
 
-    // Position arrowhead exactly on the border of the destination vertex (radius 50)
-    // We use the Pythagorean theorem because the line is shifted sideways
     float radius = 50.0f;
     float setback = sqrt(radius * radius - shiftAmount * shiftAmount);
     Vector2 arrowPos = {endPos.x - cos(angle) * setback,
                         endPos.y - sin(angle) * setback};
 
-    // Draw the arrowhead (a triangle)
-    float arrowSize = 20.0f; // Increased arrow size for better visibility
+    float arrowSize = 20.0f;
     float pi = 3.14159f;
     Vector2 p1 = {arrowPos.x - cos(angle - pi / 6.0f) * arrowSize,
                   arrowPos.y - sin(angle - pi / 6.0f) * arrowSize};
     Vector2 p2 = {arrowPos.x - cos(angle + pi / 6.0f) * arrowSize,
                   arrowPos.y - sin(angle + pi / 6.0f) * arrowSize};
 
-    // Swap p1 and p2 to fix potential winding order issues (counter-clockwise
-    // required in Raylib)
     DrawTriangle(arrowPos, p2, p1, edgeColor);
+  }
 
-    // Draw the weight text at 30% from source, offset perpendicular to the edge
-    // so the label hugs its specific edge line
+  // 2. Draw Edge weight labels (second pass - always on top of all edges)
+  for (const auto &edge : edges) {
+    Vector2 startPos = vertices[edge.idx.first].location;
+    Vector2 endPos = vertices[edge.idx.second].location;
+
+    bool isTSP = false;
+    bool isExploring = false;
+    if (!event && currentTSPPath.size() > 1) {
+      for (size_t i = 0; i < currentTSPPath.size() - 1; i++) {
+        if (edge.idx.first == currentTSPPath[i] && edge.idx.second == currentTSPPath[i + 1]) {
+          isTSP = true; break;
+        }
+      }
+    }
+    if (event && event->currentPath.size() > 1) {
+      for (size_t i = 0; i < event->currentPath.size() - 1; i++) {
+        if (edge.idx.first == event->currentPath[i] && edge.idx.second == event->currentPath[i + 1]) {
+          isExploring = true; break;
+        }
+      }
+    }
+
+    Color defaultEdgeColor = isDarkMode ? RAYWHITE : edge.color;
+    Color edgeColor = isTSP ? GREEN : (isExploring ? ORANGE : defaultEdgeColor);
+
+    bool hasReverse = false;
+    for (const auto &other : edges) {
+      if (other.idx.first == edge.idx.second && other.idx.second == edge.idx.first) {
+        hasReverse = true; break;
+      }
+    }
+
+    float angle = atan2(endPos.y - startPos.y, endPos.x - startPos.x);
+    float shiftAmount = hasReverse ? 10.0f : 0.0f;
+    if (hasReverse) {
+      startPos.x -= sin(angle) * shiftAmount;
+      startPos.y += cos(angle) * shiftAmount;
+      endPos.x -= sin(angle) * shiftAmount;
+      endPos.y += cos(angle) * shiftAmount;
+    }
+
     float labelT = 0.3f;
     float midX = startPos.x + (endPos.x - startPos.x) * labelT;
     float midY = startPos.y + (endPos.y - startPos.y) * labelT;
-    // Offset perpendicular to the edge (same direction as the edge shift)
-    float perpOffset = -15.0f; // Negative = left side of the edge direction
+    float perpOffset = -15.0f;
     int textX = (int)(midX - sin(angle) * perpOffset);
     int textY = (int)(midY + cos(angle) * perpOffset);
     Color weightColor = isDarkMode ? RAYWHITE : BLACK;
