@@ -26,7 +26,10 @@ int main() {
 
     // ===== FONT =====
     sf::Font font;
-    if (!font.openFromFile("arial.ttf")) return -1;
+    if (!font.openFromFile("assets/arial.ttf")) {
+        std::cout << "Failed to load font\n";
+        return -1;
+    }
 
     // ===== CORE =====
     LinkedListController controller;
