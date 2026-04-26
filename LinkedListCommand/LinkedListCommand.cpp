@@ -164,7 +164,7 @@ void LinkedListController::resetToStart() {
 void LinkedListController::undo() {
     if (stepIndex <= 0) return;
     stepIndex--;
-    rebuildHeapUpTo(stepIndex);
+    rebuildListUpTo(stepIndex);
 }
 
 // ===== Redo =====
@@ -251,7 +251,7 @@ void LinkedListController::loadFromFile(const std::string& filename) {
 
     int x;
     while (in >> x) {
-        this->push(x);
+        list.pushBack(x);
     }
 
     currentMessage = "Loaded from " + filename;
