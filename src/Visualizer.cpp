@@ -38,16 +38,10 @@ void Visualizer::Update() {
     }
 }
 
-void Visualizer::Draw(Graph& graph, int screenWidth, int screenHeight) {
+void Visualizer::DrawUI(int screenWidth, int screenHeight) {
     if (!active || result.events.empty()) return;
     
     const auto& event = result.events[currentStep];
-    
-    // Pass event to graph drawing. Wait, Graph::Draw doesn't take event yet! 
-    // We'll update Graph in the next step, for now just call Draw() without event, 
-    // or we can add the event pointer to Graph.h now.
-    // Let's add it to Graph.h first before compiling. For now, we will assume graph.Draw(&event) exists.
-    graph.Draw(&event);
     
     // Construct best path text
     std::string fullDesc = event.description;
@@ -105,4 +99,11 @@ bool Visualizer::IsActive() const {
 void Visualizer::Stop() {
     active = false;
     isPlaying = false;
+}
+
+const VisualizationEvent* Visualizer::GetCurrentEvent() const {
+    if (!active || result.events.empty()) {
+        return nullptr;
+    }
+    return &result.events[currentStep];
 }

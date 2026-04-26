@@ -21,7 +21,7 @@ public:
   Graph();
   ~Graph();
 
-  void Draw(const struct VisualizationEvent* event = nullptr);
+  void Draw(const struct VisualizationEvent* event = nullptr, bool isDarkMode = false);
   void Update();
   void HandleInput();
 

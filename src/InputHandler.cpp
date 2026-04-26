@@ -9,6 +9,7 @@
 InputHandler::InputHandler(Graph &graphRef, Visualizer* vis) : graph(graphRef), visualizer(vis) {
   showMenu = false;
   textBoxEditMode = false;
+  darkMode = false;
 
 // Set a default string so you don't have to type it every time
 #pragma warning(disable : 4996)
@@ -64,5 +65,10 @@ void InputHandler::Draw() {
       }
       showMenu = false;
     }
+  }
+
+  // Dark Mode Toggle Button (Top Right)
+  if (GuiButton({(float)GetScreenWidth() - 140, 20, 120, 50}, darkMode ? "Light Mode" : "Dark Mode")) {
+      darkMode = !darkMode;
   }
 }

@@ -8,6 +8,11 @@ App::App(int width, int height, const char *title)
   InitWindow(screenWidth, screenHeight, title);
   SetTargetFPS(60);
 
+  camera.target = {(float)screenWidth / 2.0f, (float)screenHeight / 2.0f};
+  camera.offset = {(float)screenWidth / 2.0f, (float)screenHeight / 2.0f};
+  camera.rotation = 0.0f;
+  camera.zoom = 1.0f;
+
   visualizer.Init();
 
   auto randomMat = graph.GenerteRandomMatrix(6);
@@ -32,17 +37,61 @@ void App::Update() {
   graph.Update();
   inputHandler.Update();
   visualizer.Update();
+
+  // --- Camera Panning (Right Mouse Button) ---
+  if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+    Vector2 delta = GetMouseDelta();
+    // Scale delta by 1/zoom so panning speed matches zoom level
+    delta.x = delta.x * (-1.0f / camera.zoom);
+    delta.y = delta.y * (-1.0f / camera.zoom);
+    camera.target.x += delta.x;
+    camera.target.y += delta.y;
+  }
+
+  // --- Camera Zooming (Mouse Wheel) ---
+  float wheel = GetMouseWheelMove();
+  if (wheel != 0) {
+    // Get the world point that is under the mouse
+    Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+    
+    // Set the target to match the mouse position
+    camera.offset = GetMousePosition();
+    camera.target = mouseWorldPos;
+    
+    // Scale the zoom
+    const float zoomIncrement = 0.125f;
+    camera.zoom += (wheel * zoomIncrement);
+    
+    // Clamp zoom limits
+    if (camera.zoom < 0.1f) camera.zoom = 0.1f;
+    else if (camera.zoom > 3.0f) camera.zoom = 3.0f;
+  }
+
+  // --- Panning Limits ---
+  // Prevent the camera target from going too far out into the void
+  if (camera.target.x < -2000) camera.target.x = -2000;
+  if (camera.target.x > 4000) camera.target.x = 4000;
+  if (camera.target.y < -2000) camera.target.y = -2000;
+  if (camera.target.y > 3000) camera.target.y = 3000;
 }
 
 void App::Draw() {
   BeginDrawing();
 
-  ClearBackground(RAYWHITE); // Using RAYWHITE for a cleaner look
+  bool isDark = inputHandler.IsDarkMode();
+  ClearBackground(isDark ? DARKGRAY : RAYWHITE); 
 
+  BeginMode2D(camera);
   if (visualizer.IsActive()) {
-    visualizer.Draw(graph, screenWidth, screenHeight);
+    graph.Draw(visualizer.GetCurrentEvent(), isDark);
   } else {
-    graph.Draw();
+    graph.Draw(nullptr, isDark);
+  }
+  EndMode2D();
+
+  // UI drawn outside camera so it doesn't move or scale
+  if (visualizer.IsActive()) {
+      visualizer.DrawUI(screenWidth, screenHeight);
   }
 
   inputHandler.Draw();

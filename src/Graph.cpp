@@ -6,7 +6,7 @@ Graph::~Graph() {}
 
 void Graph::Init() {}
 
-void Graph::Draw(const VisualizationEvent *event) {
+void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
   // 1. Draw Edges
   for (const auto &edge : edges) {
     // Get the coordinates from the connected vertices
@@ -40,7 +40,8 @@ void Graph::Draw(const VisualizationEvent *event) {
       }
     }
 
-    Color edgeColor = isTSP ? GREEN : (isExploring ? ORANGE : edge.color);
+    Color defaultEdgeColor = isDarkMode ? RAYWHITE : edge.color;
+    Color edgeColor = isTSP ? GREEN : (isExploring ? ORANGE : defaultEdgeColor);
     float edgeThickness = isTSP || isExploring ? 8.0f : 4.0f;
 
     // Check if reverse edge exists
@@ -66,9 +67,9 @@ void Graph::Draw(const VisualizationEvent *event) {
     // Draw the connecting line
     DrawLineEx(startPos, endPos, edgeThickness, edgeColor);
 
-    // Position arrowhead exactly on the border of the destination vertex (radius 20)
+    // Position arrowhead exactly on the border of the destination vertex (radius 50)
     // We use the Pythagorean theorem because the line is shifted sideways
-    float radius = 20.0f;
+    float radius = 50.0f;
     float setback = sqrt(radius * radius - shiftAmount * shiftAmount);
     Vector2 arrowPos = {endPos.x - cos(angle) * setback,
                         endPos.y - sin(angle) * setback};
@@ -88,27 +89,32 @@ void Graph::Draw(const VisualizationEvent *event) {
     // Draw the weight text shifted 50% along the line to be in the middle
     int textX = startPos.x + (endPos.x - startPos.x) * 0.5f;
     int textY = startPos.y + (endPos.y - startPos.y) * 0.5f;
+    Color weightColor = isDarkMode ? RAYWHITE : DARKGRAY;
     DrawText(TextFormat("%d", edge.weight), textX, textY - 20, 20,
-             isTSP || isExploring ? edgeColor : DARKGRAY);
+             isTSP || isExploring ? edgeColor : weightColor);
   }
 
   // 2. Draw Vertices
   for (const auto &vertex : vertices) {
-    Color vColor = vertex.color;
+    Color defaultVColor = isDarkMode ? DARKGRAY : RAYWHITE;
+    Color vColor = defaultVColor;
     if (event && event->visited.size() > vertex.idx &&
         event->visited[vertex.idx]) {
       vColor = ORANGE; // Highlight visited nodes
     }
 
-    // Draw the colored circle
-    DrawCircleV(vertex.location, 20.0f, vColor);
+    // Draw the colored circle (acts as an eraser over edges)
+    DrawCircleV(vertex.location, 45.0f, vColor);
 
-    // Draw a nice black outline
-    DrawCircleLines(vertex.location.x, vertex.location.y, 20.0f, DARKBROWN);
+    // Draw a nice outline using DrawRing
+    Color borderColor = isDarkMode ? RAYWHITE : BLACK;
+    DrawRing(vertex.location, 45.0f, 50.0f, 0.0f, 360.0f, 100, borderColor);
 
     // Draw the vertex ID inside the circle
-    DrawText(TextFormat("%d", vertex.idx), vertex.location.x - 5,
-             vertex.location.y - 10, 20, WHITE);
+    Color textColor = isDarkMode ? RAYWHITE : BLACK;
+    const char* text = TextFormat("%d", vertex.idx);
+    int textWidth = MeasureText(text, 50);
+    DrawText(text, vertex.location.x - textWidth/2, vertex.location.y - 25, 50, textColor);
   }
 }
 
@@ -182,8 +188,8 @@ std::vector<std::vector<int>> Graph::getMatrix(const std::string &filename) {
 
 void Graph::Update() {
   // Tweak these constants to make your graph behave differently!
-  const float REPULSION_CONSTANT = 8000.0f; // Push hard!
-  const float ATTRACTION_CONSTANT = 0.0001f; // Super loose springs
+  const float REPULSION_CONSTANT = 80000.0f; // Push much harder to spread large nodes
+  const float ATTRACTION_CONSTANT = 0.00005f; // Looser springs
   const float GRAVITY = 0.01f;             // Gentle pull to center
   const float DAMPING = 0.9f;
   const float MAX_SPEED = 15.0f; // Higher speed limit

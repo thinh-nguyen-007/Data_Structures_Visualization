@@ -27,6 +27,7 @@ private:
   Graph graph;
   Visualizer visualizer;
   InputHandler inputHandler;
+  Camera2D camera;
 };
 
 #endif // APP_H

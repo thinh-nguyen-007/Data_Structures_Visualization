@@ -16,7 +16,9 @@ public:
     void SetResult(const TSPResult& res, const std::vector<std::string>& pseudoCode);
     
     void Update();
-    void Draw(Graph& graph, int screenWidth, int screenHeight);
+    void DrawUI(int screenWidth, int screenHeight);
+    
+    const VisualizationEvent* GetCurrentEvent() const;
     
     bool IsActive() const;
     void Stop();
