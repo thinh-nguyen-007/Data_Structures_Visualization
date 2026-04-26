@@ -9,8 +9,8 @@ Visualizer::Visualizer() {
     timer = 0.0f;
 }
 
-void Visualizer::Init() {
-    sidepeak.InitFont();
+void Visualizer::Init(Font codeFont, Font descFont) {
+    sidepeak.SetFont(codeFont, descFont);
 }
 
 void Visualizer::SetResult(const TSPResult& res, const std::vector<std::string>& pseudoCode) {

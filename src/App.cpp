@@ -13,7 +13,20 @@ App::App(int width, int height, const char *title)
   camera.rotation = 0.0f;
   camera.zoom = 1.0f;
 
-  visualizer.Init();
+  // Load custom font for the entire application
+  appFont = LoadFontEx("assets/Agbalumo-Regular.ttf", 48, 0, 250);
+  if (appFont.texture.id == 0) {
+    appFont = GetFontDefault(); // Fallback
+  }
+
+  // Load ChironGoRound font for the sidepeak description (tracking text)
+  Font descFont = LoadFontEx("assets/ChironGoRoundTC-VariableFont_wght (1).ttf", 48, 0, 250);
+  if (descFont.texture.id == 0) {
+    descFont = GetFontDefault();
+  }
+
+  visualizer.Init(appFont, descFont);
+  graph.Init(appFont);
 
   auto randomMat = graph.GenerteRandomMatrix(6);
   graph.LoadFromMatrix(randomMat);

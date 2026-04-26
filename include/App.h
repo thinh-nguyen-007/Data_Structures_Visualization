@@ -28,6 +28,7 @@ private:
   Visualizer visualizer;
   InputHandler inputHandler;
   Camera2D camera;
+  Font appFont;
 };
 
 #endif // APP_H

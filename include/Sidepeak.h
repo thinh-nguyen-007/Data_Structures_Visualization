@@ -8,7 +8,7 @@ public:
     Sidepeak();
     ~Sidepeak();
     
-    void InitFont();
+    void SetFont(Font codeF, Font descF);
     void SetCode(const std::vector<std::string>& code);
     
     // Draw the panel at the bottom right
@@ -17,5 +17,6 @@ public:
 private:
     std::vector<std::string> pseudoCode;
     Font codeFont;
+    Font descFont;
     bool fontLoaded;
 };

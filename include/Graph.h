@@ -16,6 +16,7 @@ private:
   std::vector<Edge> edges;
   std::vector<std::vector<int>> adjacencyMatrix;
   std::vector<int> currentTSPPath;
+  Font customFont;
 
 public:
   Graph();
@@ -25,7 +26,7 @@ public:
   void Update();
   void HandleInput();
 
-  void Init();
+  void Init(Font font);
   void Shutdown();
 
   void Clear();

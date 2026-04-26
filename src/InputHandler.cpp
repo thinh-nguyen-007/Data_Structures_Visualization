@@ -46,11 +46,19 @@ void InputHandler::Draw() {
   if (showMenu) {
     // Draw background panel
     GuiPanel({20, 90, 470, 200}, "Graph Generators");
-    // Random Button!
-    if (GuiButton({40, 140, 430, 50}, "Generate Random Graph (5 Nodes)")) {
-      auto randomMat = graph.GenerteRandomMatrix(5);
-      graph.LoadFromMatrix(randomMat);
-      showMenu = false;
+
+    // Row of vertex count buttons (2 to 7)
+    DrawText("Nodes:", 40, 150, 20, DARKGRAY);
+    float btnStartX = 120.0f;
+    float btnWidth = 55.0f;
+    float btnGap = 5.0f;
+    for (int n = 2; n <= 7; n++) {
+      float x = btnStartX + (n - 2) * (btnWidth + btnGap);
+      if (GuiButton({x, 140, btnWidth, 50}, TextFormat("%d", n))) {
+        auto randomMat = graph.GenerteRandomMatrix(n);
+        graph.LoadFromMatrix(randomMat);
+        showMenu = false;
+      }
     }
     // Text Box for your filename
     if (GuiTextBox({40, 210, 300, 50}, textBuffer, 256, textBoxEditMode)) {

@@ -10,7 +10,7 @@ class Visualizer {
 public:
     Visualizer();
     
-    void Init();
+    void Init(Font codeFont, Font descFont);
     
     // Feed the algorithm result into the visualizer
     void SetResult(const TSPResult& res, const std::vector<std::string>& pseudoCode);

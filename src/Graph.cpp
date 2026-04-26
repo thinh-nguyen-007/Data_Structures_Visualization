@@ -4,7 +4,7 @@
 Graph::Graph() {}
 Graph::~Graph() {}
 
-void Graph::Init() {}
+void Graph::Init(Font font) { customFont = font; }
 
 void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
   // 1. Draw Edge lines and arrowheads (first pass)
@@ -86,15 +86,19 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
     bool isExploring = false;
     if (!event && currentTSPPath.size() > 1) {
       for (size_t i = 0; i < currentTSPPath.size() - 1; i++) {
-        if (edge.idx.first == currentTSPPath[i] && edge.idx.second == currentTSPPath[i + 1]) {
-          isTSP = true; break;
+        if (edge.idx.first == currentTSPPath[i] &&
+            edge.idx.second == currentTSPPath[i + 1]) {
+          isTSP = true;
+          break;
         }
       }
     }
     if (event && event->currentPath.size() > 1) {
       for (size_t i = 0; i < event->currentPath.size() - 1; i++) {
-        if (edge.idx.first == event->currentPath[i] && edge.idx.second == event->currentPath[i + 1]) {
-          isExploring = true; break;
+        if (edge.idx.first == event->currentPath[i] &&
+            edge.idx.second == event->currentPath[i + 1]) {
+          isExploring = true;
+          break;
         }
       }
     }
@@ -102,31 +106,17 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
     Color defaultEdgeColor = isDarkMode ? RAYWHITE : edge.color;
     Color edgeColor = isTSP ? GREEN : (isExploring ? ORANGE : defaultEdgeColor);
 
-    bool hasReverse = false;
-    for (const auto &other : edges) {
-      if (other.idx.first == edge.idx.second && other.idx.second == edge.idx.first) {
-        hasReverse = true; break;
-      }
-    }
-
-    float angle = atan2(endPos.y - startPos.y, endPos.x - startPos.x);
-    float shiftAmount = hasReverse ? 10.0f : 0.0f;
-    if (hasReverse) {
-      startPos.x -= sin(angle) * shiftAmount;
-      startPos.y += cos(angle) * shiftAmount;
-      endPos.x -= sin(angle) * shiftAmount;
-      endPos.y += cos(angle) * shiftAmount;
-    }
-
     float labelT = 0.3f;
     float midX = startPos.x + (endPos.x - startPos.x) * labelT;
     float midY = startPos.y + (endPos.y - startPos.y) * labelT;
-    float perpOffset = -15.0f;
-    int textX = (int)(midX - sin(angle) * perpOffset);
-    int textY = (int)(midY + cos(angle) * perpOffset);
+    int textX = (int)midX;
+    int textY = (int)midY;
     Color weightColor = isDarkMode ? RAYWHITE : BLACK;
-    DrawText(TextFormat("%d", edge.weight), textX, textY, 20,
-             isTSP || isExploring ? edgeColor : weightColor);
+    Color finalColor = isTSP || isExploring ? edgeColor : weightColor;
+    const char *weightText = TextFormat("%d", edge.weight);
+    // Use custom font for edge weight labels
+    DrawTextEx(customFont, weightText, {(float)textX, (float)textY}, 36, 1,
+               finalColor);
   }
 
   // 2. Draw Vertices
@@ -147,9 +137,14 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
 
     // Draw the vertex ID inside the circle
     Color textColor = isDarkMode ? RAYWHITE : BLACK;
-    const char* text = TextFormat("%d", vertex.idx);
-    int textWidth = MeasureText(text, 50);
-    DrawText(text, vertex.location.x - textWidth/2, vertex.location.y - 25, 50, textColor);
+    const char *text = TextFormat("%d", vertex.idx);
+    float fontSize = 50.0f;
+    Vector2 textSize = MeasureTextEx(customFont, text, fontSize, 1);
+    // Center horizontally using measured width, vertically center using
+    // measured height
+    float textX = vertex.location.x - textSize.x / 2.0f;
+    float textY = vertex.location.y - fontSize * 0.5f;
+    DrawTextEx(customFont, text, {textX, textY}, fontSize, 1, textColor);
   }
 }
 
@@ -186,13 +181,38 @@ void Graph::LoadFromMatrix(const std::vector<std::vector<int>> &matrix) {
 
 std::vector<std::vector<int>> Graph::GenerteRandomMatrix(int numVertices) {
   std::vector<std::vector<int>> matrix(numVertices,
-                                       std::vector<int>(numVertices));
-  for (int i = 0; i < numVertices; i++) {
-    for (int j = 0; j < numVertices; j++) {
-      if (i != j) {
-        matrix[i][j] = GetRandomValue(1, 100);
-      } else {
-        matrix[i][j] = 0;
+                                       std::vector<int>(numVertices, 0));
+  // ~30% chance of generating a complete graph
+  bool makeComplete = (GetRandomValue(1, 100) <= 30);
+
+  if (makeComplete) {
+    for (int i = 0; i < numVertices; i++) {
+      for (int j = 0; j < numVertices; j++) {
+        if (i != j)
+          matrix[i][j] = GetRandomValue(1, 100);
+      }
+    }
+  } else {
+    // Guarantee a Hamiltonian cycle so TSP is always solvable
+    std::vector<int> order(numVertices);
+    for (int i = 0; i < numVertices; i++)
+      order[i] = i;
+    for (int i = numVertices - 1; i > 0; i--) {
+      int j = GetRandomValue(0, i);
+      std::swap(order[i], order[j]);
+    }
+    for (int i = 0; i < numVertices; i++) {
+      int from = order[i];
+      int to = order[(i + 1) % numVertices];
+      matrix[from][to] = GetRandomValue(1, 100);
+      matrix[to][from] = GetRandomValue(1, 100);
+    }
+    // Randomly add extra edges (~60% chance each)
+    for (int i = 0; i < numVertices; i++) {
+      for (int j = 0; j < numVertices; j++) {
+        if (i != j && matrix[i][j] == 0 && GetRandomValue(1, 100) <= 40) {
+          matrix[i][j] = GetRandomValue(1, 100);
+        }
       }
     }
   }
@@ -223,9 +243,10 @@ std::vector<std::vector<int>> Graph::getMatrix(const std::string &filename) {
 
 void Graph::Update() {
   // Tweak these constants to make your graph behave differently!
-  const float REPULSION_CONSTANT = 80000.0f; // Push much harder to spread large nodes
+  const float REPULSION_CONSTANT =
+      80000.0f; // Push much harder to spread large nodes
   const float ATTRACTION_CONSTANT = 0.00005f; // Looser springs
-  const float GRAVITY = 0.01f;             // Gentle pull to center
+  const float GRAVITY = 0.01f;                // Gentle pull to center
   const float DAMPING = 0.9f;
   const float MAX_SPEED = 15.0f; // Higher speed limit
 
