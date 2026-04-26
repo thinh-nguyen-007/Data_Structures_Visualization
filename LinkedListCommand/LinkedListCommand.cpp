@@ -194,7 +194,7 @@ bool LinkedListController::isAtOperationEnd() const {
 }
 
 // ===== Rebuild =====
-void LinkedListController::rebuildHeapUpTo(int k) {
+void LinkedListController::rebuildListUpTo(int k) {
     list.clear();
     highlightIndex = -1;
 
@@ -251,7 +251,7 @@ void LinkedListController::loadFromFile(const std::string& filename) {
 
     int x;
     while (in >> x) {
-        push(x);
+        this->push(x);
     }
 
     currentMessage = "Loaded from " + filename;

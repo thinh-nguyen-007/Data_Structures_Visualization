@@ -51,6 +51,8 @@ private:
     // helper
     bool hasSteps() const { return stepIndex < steps.size(); }
 
+    void rebuildListUpTo(int k);
+
 public:
     // constructor
     LinkedListController();

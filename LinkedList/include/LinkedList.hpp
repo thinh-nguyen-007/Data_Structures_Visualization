@@ -39,6 +39,8 @@ public:
 
     int get(int index) const;
 
+    Node* getHead() const { return head; };
+
 public:
     // Multistep helpers (for visualization)
     void pushBackRaw(int value); 
