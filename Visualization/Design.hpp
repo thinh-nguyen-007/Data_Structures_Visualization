@@ -56,7 +56,8 @@ inline sf::ConvexShape createStar(float outer = 4.f, float inner = 2.f) {
 
 // ===== ARROW (NEXT POINTER) =====
 inline void drawArrow(sf::RenderWindow& window, sf::Vector2f start, sf::Vector2f end, sf::Color color) {
-    sf::PrimitiveType::Lines[] = {
+
+    sf::Vertex line[] = {
         sf::Vertex{start, color},
         sf::Vertex{end, color}
     };
