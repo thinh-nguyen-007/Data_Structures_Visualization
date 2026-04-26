@@ -18,17 +18,20 @@ std::vector<int> parseInput(const std::string& s) {
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1280, 900), "Linked List Visualizer PRO");
+    sf::RenderWindow window(
+        sf::VideoMode({1280, 900}),
+        "Linked List Visualizer PRO"
+    );
     window.setFramerateLimit(60);
 
     // ===== FONT =====
     sf::Font font;
-    if (!font.loadFromFile("arial.ttf")) return -1;
+    if (!font.openFromFile("arial.ttf")) return -1;
 
     // ===== CORE =====
     LinkedListController controller;
     LinkedListRenderer renderer;
-    Animation animation;
+    LinkedListAnimation animation;
 
     // ===== UI =====
     InputBox input({ 50, 40 }, { 250, 45 }, font);
@@ -62,18 +65,21 @@ int main() {
 
     // ===== LOOP =====
     while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
 
-            if (event.type == sf::Event::Closed)
+        while (auto event = window.pollEvent()) {
+
+            // ===== CLOSE =====
+            if (event->is<sf::Event::Closed>())
                 window.close();
 
             // ===== INPUT =====
-            input.handleInsert(event, window);
+            input.handleInsert(*event, window);
 
-            // ===== BUTTON CLICK =====
-            if (event.type == sf::Event::MouseButtonPressed) {
-                sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+            // ===== MOUSE CLICK =====
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+
+                auto mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mouse = window.mapPixelToCoords(mousePos);
 
                 btnPlay.handleClick(mouse);
                 btnStepF.handleClick(mouse);
@@ -91,14 +97,14 @@ int main() {
                 // ===== INSERT MULTIPLE =====
                 if (btnInsert.contains(mouse)) {
                     std::vector<int> vals = parseInput(input.getText());
-                    for (int x : vals) controller.push(x);
+                    for (int x : vals)
+                        controller.pushBack(x);
                     input.clear();
                 }
 
                 // ===== DELETE =====
                 if (btnDelete.contains(mouse)) {
-                    int x;
-                    controller.pop(x);
+                    controller.popFront();
                 }
 
                 // ===== SEARCH =====
@@ -120,7 +126,7 @@ int main() {
             }
 
             // ===== SPEED =====
-            slider.handleEvent(event, window);
+            slider.handleEvent(*event, window);
         }
 
         float dt = clock.restart().asSeconds();

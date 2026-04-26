@@ -8,7 +8,7 @@ public:
     // draw main linked list (node + arrow + highlight + animation)
     void draw(sf::RenderWindow& window,
               LinkedListController& controller,
-              Animation& anim,
+              LinkedListAnimation& anim,
               const sf::Font& font);
 
     // optional: draw array/table view (debug hoặc bonus điểm)

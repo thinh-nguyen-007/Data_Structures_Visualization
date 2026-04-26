@@ -114,14 +114,14 @@ private:
     bool enabled = true;
     bool selected = false;
 
-    LinkedListCommand* controller = nullptr;
-    void (LinkedListCommand::* action)() = nullptr;
+    LinkedListController* controller = nullptr;
+    void (LinkedListController::* action)() = nullptr;
 
 public:
     Button(sf::Vector2f center, float size, ButtonIcon icon)
         : center(center), size(size), icon(icon) {}
 
-    void setAction(LinkedListCommand* ctrl, void (LinkedListCommand::* func)()) {
+    void setAction(LinkedListController* ctrl, void (LinkedListController::* func)()) {
         controller = ctrl;
         action = func;
     }

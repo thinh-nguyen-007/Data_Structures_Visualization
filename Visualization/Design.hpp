@@ -56,9 +56,9 @@ inline sf::ConvexShape createStar(float outer = 4.f, float inner = 2.f) {
 
 // ===== ARROW (NEXT POINTER) =====
 inline void drawArrow(sf::RenderWindow& window, sf::Vector2f start, sf::Vector2f end, sf::Color color) {
-    sf::Vertex line[] = {
-        sf::Vertex(start, color),
-        sf::Vertex(end, color)
+    sf::PrimitiveType::Lines[] = {
+        sf::Vertex{start, color},
+        sf::Vertex{end, color}
     };
 
     float angle = std::atan2(end.y - start.y, end.x - start.x);
@@ -82,7 +82,7 @@ inline void drawArrow(sf::RenderWindow& window, sf::Vector2f start, sf::Vector2f
     arrowhead.setPoint(2, p2);
     arrowhead.setFillColor(color);
 
-    window.draw(line, 2, sf::Lines);
+    window.draw(line, 2, sf::PrimitiveType::Lines);
     window.draw(arrowhead);
 }
 

@@ -4,7 +4,7 @@
 
 void LinkedListRenderer::draw(sf::RenderWindow& window,
                               LinkedListController& controller,
-                              Animation& anim,
+                              LinkedListAnimation& anim,
                               const sf::Font& font)
 {
     float R = 25.f;
