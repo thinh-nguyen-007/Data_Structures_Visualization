@@ -2,6 +2,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "../LinkedListCommand/LinkedListCommand.hpp"
 #include "LinkedListRenderer.hpp"
@@ -26,7 +27,7 @@ int main() {
 
     // ===== FONT =====
     sf::Font font;
-    if (!font.openFromFile("assets/arial.ttf")) {
+    if (!font.openFromFile("../assets/arial.ttf")) {
         std::cout << "Failed to load font\n";
         return -1;
     }
