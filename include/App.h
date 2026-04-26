@@ -1,7 +1,10 @@
 #ifndef APP_H
 #define APP_H
 
-#include "../Logic/Graph.h"
+#include "Algorithms.h"
+#include "Graph.h"
+#include "Visualizer.h"
+#include "InputHandler.h"
 #include "raylib.h"
 
 class App {
@@ -22,6 +25,8 @@ private:
   void Draw();
 
   Graph graph;
+  Visualizer visualizer;
+  InputHandler inputHandler;
 };
 
 #endif // APP_H

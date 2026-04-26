@@ -1,13 +1,16 @@
 #include "App.h"
 
 App::App(int width, int height, const char *title)
-    : screenWidth(width), screenHeight(height) {
+    : screenWidth(width), screenHeight(height),
+      inputHandler(graph, &visualizer) {
   // Initialize the window here. This ensures Raylib is ready as soon as App is
   // created.
   InitWindow(screenWidth, screenHeight, title);
   SetTargetFPS(60);
 
-  auto randomMat = graph.GenerteRandomMatrix(10);
+  visualizer.Init();
+
+  auto randomMat = graph.GenerteRandomMatrix(6);
   graph.LoadFromMatrix(randomMat);
 }
 
@@ -27,14 +30,21 @@ void App::Run() {
 void App::Update() {
   // TODO: We will put our InputHandler checks and Graph data updates here
   graph.Update();
+  inputHandler.Update();
+  visualizer.Update();
 }
 
 void App::Draw() {
   BeginDrawing();
 
-  ClearBackground(GRAY);
+  ClearBackground(RAYWHITE); // Using RAYWHITE for a cleaner look
 
-  // A simple text to verify our App loop is running
-  graph.Draw();
+  if (visualizer.IsActive()) {
+    visualizer.Draw(graph, screenWidth, screenHeight);
+  } else {
+    graph.Draw();
+  }
+
+  inputHandler.Draw();
   EndDrawing();
 }

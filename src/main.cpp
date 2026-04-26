@@ -1,7 +1,7 @@
-#include "core/App.h"
+#include "App.h"
 
 int main() {
-  App app(800, 600, "Graph (TSP) Visualization");
+  App app(1920, 1080, "Graph (TSP) Visualization");
   app.Run();
 
   return 0;
