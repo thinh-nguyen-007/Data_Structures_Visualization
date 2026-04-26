@@ -106,11 +106,25 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
     Color defaultEdgeColor = isDarkMode ? RAYWHITE : edge.color;
     Color edgeColor = isTSP ? GREEN : (isExploring ? ORANGE : defaultEdgeColor);
 
+    float angle = atan2(endPos.y - startPos.y, endPos.x - startPos.x);
+
+    // Check if reverse edge exists
+    bool hasReverse = false;
+    for (const auto &other : edges) {
+      if (other.idx.first == edge.idx.second &&
+          other.idx.second == edge.idx.first) {
+        hasReverse = true;
+        break;
+      }
+    }
+
     float labelT = 0.3f;
     float midX = startPos.x + (endPos.x - startPos.x) * labelT;
     float midY = startPos.y + (endPos.y - startPos.y) * labelT;
-    int textX = (int)midX;
-    int textY = (int)midY;
+    // Offset perpendicular to match the shifted edge line direction
+    float perpOffset = hasReverse ? 30.0f : 0.0f;
+    int textX = (int)(midX - sin(angle) * perpOffset);
+    int textY = (int)(midY + cos(angle) * perpOffset);
     Color weightColor = isDarkMode ? RAYWHITE : BLACK;
     Color finalColor = isTSP || isExploring ? edgeColor : weightColor;
     const char *weightText = TextFormat("%d", edge.weight);
