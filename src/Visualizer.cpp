@@ -43,19 +43,20 @@ void Visualizer::DrawUI(int screenWidth, int screenHeight) {
     
     const auto& event = result.events[currentStep];
     
-    // Construct best path text
-    std::string fullDesc = event.description;
+    // Build description and best path separately
+    std::string desc = event.description;
+    std::string bestPathText = "";
     if (!event.bestPath.empty()) {
-        fullDesc += "\nBest Path: ";
+        bestPathText = "Best Path: ";
         for (size_t i = 0; i < event.bestPath.size(); i++) {
-            fullDesc += std::to_string(event.bestPath[i]);
-            if (i < event.bestPath.size() - 1) fullDesc += "->";
+            bestPathText += std::to_string(event.bestPath[i]);
+            if (i < event.bestPath.size() - 1) bestPathText += "->";
         }
-        fullDesc += " (Cost: " + std::to_string(event.bestCost) + ")";
+        bestPathText += " (Cost: " + std::to_string(event.bestCost) + ")";
     }
     
     // Draw the sidepeak
-    sidepeak.Draw(screenWidth, screenHeight, fullDesc, event.sourceCodeLine);
+    sidepeak.Draw(screenWidth, screenHeight, desc, bestPathText, event.sourceCodeLine);
     
     // Draw playback controls at the bottom center
     int panelWidth = 1000;

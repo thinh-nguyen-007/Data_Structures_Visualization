@@ -19,11 +19,11 @@ void Sidepeak::SetCode(const std::vector<std::string> &code) {
 }
 
 void Sidepeak::Draw(int screenWidth, int screenHeight,
-                    const std::string &description, int activeLine) {
-  int panelWidth = 600; // <--- Edit this to change the width of the whole panel
+                    const std::string &description, const std::string &bestPath,
+                    int activeLine) {
+  int panelWidth = 600;
   int codeLineHeight = 30;
-  int descriptionHeight =
-      55; // <--- Edit this to change the height of the cyan part
+  int descriptionHeight = 70;
   int codeHeight = pseudoCode.size() * codeLineHeight + 20;
   int panelHeight = descriptionHeight + codeHeight;
   int startX = screenWidth - panelWidth - 20;
@@ -33,12 +33,22 @@ void Sidepeak::Draw(int screenWidth, int screenHeight,
   Color descBg = {64, 180, 196, 255};
   DrawRectangle(startX, startY, panelWidth, descriptionHeight, descBg);
 
-  // Draw description text (bold, slightly bigger than pseudo code)
+  // Draw tracking text (white)
   if (fontLoaded) {
     DrawTextEx(descFont, description.c_str(),
                {(float)startX + 20, (float)startY + 8}, 23, 1, WHITE);
   } else {
     DrawText(description.c_str(), startX + 10, startY + 10, 20, WHITE);
+  }
+
+  // Draw best path text (green, separated below)
+  if (!bestPath.empty()) {
+    if (fontLoaded) {
+      DrawTextEx(descFont, bestPath.c_str(),
+                 {(float)startX + 20, (float)startY + 38}, 24, 1, GREEN);
+    } else {
+      DrawText(bestPath.c_str(), startX + 10, startY + 38, 20, GREEN);
+    }
   }
 
   // Draw code background (greenish)

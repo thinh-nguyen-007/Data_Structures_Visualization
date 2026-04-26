@@ -12,7 +12,7 @@ public:
     void SetCode(const std::vector<std::string>& code);
     
     // Draw the panel at the bottom right
-    void Draw(int screenWidth, int screenHeight, const std::string& description, int activeLine);
+    void Draw(int screenWidth, int screenHeight, const std::string& description, const std::string& bestPath, int activeLine);
 
 private:
     std::vector<std::string> pseudoCode;

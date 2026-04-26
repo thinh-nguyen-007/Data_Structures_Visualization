@@ -6,7 +6,8 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 // Initialize variables and pass the Graph reference
-InputHandler::InputHandler(Graph &graphRef, Visualizer* vis) : graph(graphRef), visualizer(vis) {
+InputHandler::InputHandler(Graph &graphRef, Visualizer *vis)
+    : graph(graphRef), visualizer(vis) {
   showMenu = false;
   textBoxEditMode = false;
   darkMode = false;
@@ -23,22 +24,21 @@ void InputHandler::Draw() {
   }
   // --- NEW: Run TSP Button ---
   if (GuiButton({240, 20, 250, 50}, "Run Brute Force TSP")) {
-      auto result = TSP_BruteForce(graph);
-      
-      std::vector<std::string> pseudoCode = {
-          "1. If all nodes visited: check return to start",
-          "2. If valid return path and cost < bestCost:",
-          "3.   Update bestCost and bestPath",
-          "4. For each unvisited neighbor V:",
-          "5.   Choose edge, mark V visited",
-          "6.   Recurse deeper (un-choose when done)"
-      };
-      
-      if (visualizer) {
-          visualizer->SetResult(result, pseudoCode);
-      }
-      
-      graph.SetTSPPath(result.path); // Highlights the path!
+    auto result = TSP_BruteForce(graph);
+
+    std::vector<std::string> pseudoCode = {
+        "1. If all nodes visited: check return to start",
+        "2. If valid return path and cost < bestCost:",
+        "3.   Update bestCost and bestPath",
+        "4. For each unvisited neighbor V:",
+        "5.   Choose edge, mark V visited",
+        "6.   Recurse deeper (un-choose when done)"};
+
+    if (visualizer) {
+      visualizer->SetResult(result, pseudoCode);
+    }
+
+    graph.SetTSPPath(result.path); // Highlights the path!
   }
   // ---------------------------
 
@@ -46,6 +46,7 @@ void InputHandler::Draw() {
   if (showMenu) {
     // Draw background panel
     GuiPanel({20, 90, 470, 200}, "Graph Generators");
+    DrawText("!!ONLY DO 2 -> 7 NODES GRAPHS !!", 200, 95, 10, GRAY);
 
     // Row of vertex count buttons (2 to 7)
     DrawText("Nodes:", 40, 150, 20, DARKGRAY);
@@ -68,7 +69,8 @@ void InputHandler::Draw() {
     // Load Matrix Button!
     if (GuiButton({360, 210, 110, 50}, "Load File")) {
       auto fileMat = graph.getMatrix(std::string(textBuffer));
-      if (!fileMat.empty()) {
+      int n = (int)fileMat.size();
+      if (!fileMat.empty() && n >= 2 && n <= 7) {
         graph.LoadFromMatrix(fileMat);
       }
       showMenu = false;
@@ -76,7 +78,8 @@ void InputHandler::Draw() {
   }
 
   // Dark Mode Toggle Button (Top Right)
-  if (GuiButton({(float)GetScreenWidth() - 140, 20, 120, 50}, darkMode ? "Light Mode" : "Dark Mode")) {
-      darkMode = !darkMode;
+  if (GuiButton({(float)GetScreenWidth() - 140, 20, 120, 50},
+                darkMode ? "Light Mode" : "Dark Mode")) {
+    darkMode = !darkMode;
   }
 }
