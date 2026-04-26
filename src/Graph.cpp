@@ -86,11 +86,17 @@ void Graph::Draw(const VisualizationEvent *event, bool isDarkMode) {
     // required in Raylib)
     DrawTriangle(arrowPos, p2, p1, edgeColor);
 
-    // Draw the weight text shifted 50% along the line to be in the middle
-    int textX = startPos.x + (endPos.x - startPos.x) * 0.5f;
-    int textY = startPos.y + (endPos.y - startPos.y) * 0.5f;
-    Color weightColor = isDarkMode ? RAYWHITE : DARKGRAY;
-    DrawText(TextFormat("%d", edge.weight), textX, textY - 20, 20,
+    // Draw the weight text at 30% from source, offset perpendicular to the edge
+    // so the label hugs its specific edge line
+    float labelT = 0.3f;
+    float midX = startPos.x + (endPos.x - startPos.x) * labelT;
+    float midY = startPos.y + (endPos.y - startPos.y) * labelT;
+    // Offset perpendicular to the edge (same direction as the edge shift)
+    float perpOffset = -15.0f; // Negative = left side of the edge direction
+    int textX = (int)(midX - sin(angle) * perpOffset);
+    int textY = (int)(midY + cos(angle) * perpOffset);
+    Color weightColor = isDarkMode ? RAYWHITE : BLACK;
+    DrawText(TextFormat("%d", edge.weight), textX, textY, 20,
              isTSP || isExploring ? edgeColor : weightColor);
   }
 

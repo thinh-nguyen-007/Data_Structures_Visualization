@@ -48,8 +48,16 @@ void App::Update() {
     camera.target.y += delta.y;
   }
 
-  // --- Camera Zooming (Mouse Wheel) ---
+  // --- Camera Zooming (Mouse Wheel & Keyboard) ---
   float wheel = GetMouseWheelMove();
+  
+  // Keyboard zoom shortcuts
+  bool ctrlDown = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL);
+  if (ctrlDown) {
+      if (IsKeyPressed(KEY_EQUAL)) wheel += 1.0f; // + key (usually shared with =)
+      if (IsKeyPressed(KEY_MINUS)) wheel -= 1.0f;
+  }
+
   if (wheel != 0) {
     // Get the world point that is under the mouse
     Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
