@@ -13,7 +13,7 @@ void LinkedListRenderer::draw(sf::RenderWindow& window,
     LinkedList& list = controller.getList();
     int n = list.getSize();
 
-    float width = window.getSize().x;
+    float width = static_cast<float>(window.getSize().x);
     float startX = width / 2.f - (n - 1) * spacing / 2.f;
     float y = 300.f;
 
@@ -24,7 +24,7 @@ void LinkedListRenderer::draw(sf::RenderWindow& window,
         pos[i] = { startX + i * spacing, y };
     }
 
-    // ===== draw arrows (next pointer) =====
+    // ===== draw arrows =====
     for (int i = 0; i < n - 1; i++) {
         sf::Vector2f start = pos[i];
         sf::Vector2f end = pos[i + 1];
@@ -69,7 +69,7 @@ void LinkedListRenderer::draw(sf::RenderWindow& window,
         window.draw(t);
     }
 
-    // ===== draw particles =====
+    // ===== particles =====
     const auto& stars = anim.getStars();
 
     for (const auto& s : stars) {
@@ -90,7 +90,7 @@ void LinkedListRenderer::draw(sf::RenderWindow& window,
         window.draw(star);
     }
 
-    // ===== draw message =====
+    // ===== message =====
     sf::Text msg(font);
     msg.setString(controller.getMessage());
     msg.setCharacterSize(20);
@@ -101,7 +101,7 @@ void LinkedListRenderer::draw(sf::RenderWindow& window,
     window.draw(msg);
 }
 
-// ===== optional table view =====
+// ===== TABLE =====
 void LinkedListRenderer::drawTable(sf::RenderWindow& window,
                                    LinkedListController& controller,
                                    const sf::Font& font)
@@ -115,7 +115,8 @@ void LinkedListRenderer::drawTable(sf::RenderWindow& window,
     float cellH = 60.f;
 
     float startY = 600.f;
-    float startX = (window.getSize().x - n * cellW) / 2.f;
+    float width = static_cast<float>(window.getSize().x);
+    float startX = (width - n * cellW) / 2.f;
 
     int h = controller.getHighlightIndex();
 
@@ -123,7 +124,6 @@ void LinkedListRenderer::drawTable(sf::RenderWindow& window,
         float x = startX + i * cellW;
         float y = startY;
 
-        // ===== cell =====
         sf::RectangleShape cell({ cellW, cellH });
         cell.setPosition({ x, y });
 
