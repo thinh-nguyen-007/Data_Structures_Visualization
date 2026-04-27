@@ -20,23 +20,7 @@ namespace {
     float speed = 0.01f;
 }
 
-struct VisualizedTree {
-    line edge;
-    circle node;
-    long long data;
-
-    VisualizedTree* left;
-    VisualizedTree* right;
-
-    VisualizedTree(long long data = 0, Vector2 pos = {0, 0}, Vector2 targetPos = {0, 0}) {
-        this->data = data;
-        node = circle(pos, targetPos, 50.0f, 5.0f, WHITE);
-        edge = line(pos, pos, pos, pos, 5.0f, BLACK);
-        left = right = nullptr;
-    }
-};
-
-vector < vector <RenderTexture2D> > AVLTreeScenes;
+vector <pair <long long, int> > RotateState;
 float totWidth;
 float totHeight;
 float timer = 0.0f;
@@ -44,18 +28,18 @@ int CurrentNode = 0;
 VisualizedTree* VisualizedAVLTree = nullptr;
 vector <VisualizedTree*> VisualizedNodes;
 
-void AVLTree::ComputeInformation(void) {
+void ComputeInformation(void) {
     totWidth = Pow(2, Tree.getHeight(Tree.tree) - 1) * 200.0f;
     totHeight = Tree.getHeight(Tree.tree) * 200.0f;
 }
 
 void AVLTreeScenesInit(void) {
-    Tree.ComputeInformation();
+    ComputeInformation();
 
     camera.target = {totWidth / 2.0f, 50.0f};
     camera.offset = Vector2{GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
     camera.rotation = 0.0f;
-    camera.zoom = 0.20f;
+    camera.zoom = 0.5f;
 
     PrepareAVLTree();
 }
@@ -68,7 +52,7 @@ void AVLTreeScenesDeployment(void) {
 
 
     if (CurrentNode < VisualizedNodes.size()) {
-        camera.target = VisualizedNodes[CurrentNode]->node.targetPos;
+        camera.target = VisualizedNodes[CurrentNode]->node.pos;
     }
 
     if (IsKeyDown(KEY_W)) camera.target.y -= 100;
@@ -137,6 +121,7 @@ void RecuresiveDraw(AVLTree::node* tree, VisualizedTree* visualizedNode, Vector2
 void DrawAVLTree(void) {
     static float timer = 0.0f;
     static bool started = false;
+    static float duration = 1.0f;
 
     static Vector2 startNodePos;
     static Vector2 endEdgePos;
@@ -163,19 +148,17 @@ void DrawAVLTree(void) {
 
     timer += GetFrameTime();
 
-    float Time = timer / 1.5f;
+    float Time = timer / duration;
     Time = Clamp(Time, 0.0f, 1.0f);
-
-    cout << startNodePos.x << " " << startNodePos.y << " ___ " << node->node.pos.x << " " << node->node.pos.y << endl;
 
     node->node.pos = Vector2Lerp(startNodePos, node->node.targetPos, Time);
     node->edge.end = Vector2Lerp(endEdgePos, node->edge.targetEnd, Time);
 
     DrawRing(node->node.pos, node->node.radius - node->node.thickness, node->node.radius, 0.0f, 360.0f, 100, node->node.color);
-    DrawShorterLineStartEnd(node->edge.start, node->edge.end, 50.0f, node->edge.thickness, node->edge.color);
-    DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.pos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 0) / 2), 30, 0, BLACK);
+    DrawShorterLineStartEnd(node->edge.start, node->node.pos, 50.0f, node->edge.thickness, node->edge.color);
+    DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.pos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 3) / 2), 30, 3, BLACK);
 
-    if (timer >= 1.5f) {
+    if (timer >= duration) {
         node->node.pos = node->node.targetPos;
         node->edge.end = node->edge.targetEnd;
 
@@ -192,8 +175,5 @@ void OutputTree(void) {
 }
 
 void UnloadAVLTreeScenes(void) {
-    for (int i = 0; i < AVLTreeScenes.size(); i++) {
-        for (int j = 0; j < AVLTreeScenes[i].size(); j++) 
-            UnloadRenderTexture(AVLTreeScenes[i][j]);
-    }
+    
 }

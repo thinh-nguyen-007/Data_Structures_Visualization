@@ -31,7 +31,6 @@ public:
     void updateHeight(node* tree);
     void DrawAVLTree(void);
     void RecuresiveDraw(node* tree, Vector2 parpos, int depth, int spacing, int width);
-    void ComputeInformation(void);
     bool checkLL(node* tree, long long data);
     bool checkRR(node* tree, long long data);
     bool checkLR(node* tree, long long data);

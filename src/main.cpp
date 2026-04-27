@@ -40,7 +40,7 @@ int main() {
     // for (int i = 0; i < a.size(); i++) 
     //     cout << a[i] << " ";
 
-    int n = 5;
+    int n = 100;
     vector <long long> a;
     
     for (int i = 1; i <= 1000; i++) 

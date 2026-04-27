@@ -5,6 +5,7 @@
 #include <queue>
 #include "AVLTree.h"
 #include "DrawObjects.h"
+#include "VisualizeAVLTree.h"
 #include "raylib.h"
 #include "raymath.h"
 
@@ -107,21 +108,29 @@ AVLTree::node* AVLTree::Delete(node* tree, long long data) {
     int balance = getBalance(tree);
 
     // LL
-    if (balance > 1 && getBalance(tree->left) >= 0)
+    if (balance > 1 && getBalance(tree->left) >= 0) {
+        RotateState.push_back({tree->data, 2});
         return rotateRight(tree);
+    }
 
     // LR
     if (balance > 1 && getBalance(tree->left) < 0) {
+        RotateState.push_back({tree->left->data, 1});
+        RotateState.push_back({tree->data, 2});
         tree->left = rotateLeft(tree->left);
         return rotateRight(tree);
     }
 
     // RR
-    if (balance < -1 && getBalance(tree->right) <= 0)
+    if (balance < -1 && getBalance(tree->right) <= 0) {
+        RotateState.push_back({tree->data, 1});
         return rotateLeft(tree);
+    }
 
     // RL
     if (balance < -1 && getBalance(tree->right) > 0) {
+        RotateState.push_back({tree->right->data, 2});
+        RotateState.push_back({tree->data, 1});
         tree->right = rotateRight(tree->right);
         return rotateLeft(tree);
     }
