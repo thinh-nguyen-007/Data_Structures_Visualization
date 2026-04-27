@@ -26,3 +26,6 @@ struct TSPResult {
 
 // Interface for our first algorithm (stub for now)
 TSPResult TSP_BruteForce(const Graph &graph);
+
+// Local search with 2-opt edge swaps.
+TSPResult TSP_LocalSearch2Opt(const Graph &graph);

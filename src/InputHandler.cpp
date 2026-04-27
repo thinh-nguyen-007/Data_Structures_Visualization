@@ -23,7 +23,7 @@ void InputHandler::Draw() {
     showMenu = !showMenu;
   }
   // --- NEW: Run TSP Button ---
-  if (GuiButton({240, 20, 250, 50}, "Run Brute Force TSP")) {
+  if (GuiButton({240, 20, 240, 50}, "Run Brute Force TSP")) {
     auto result = TSP_BruteForce(graph);
 
     std::vector<std::string> pseudoCode = {
@@ -39,6 +39,23 @@ void InputHandler::Draw() {
     }
 
     graph.SetTSPPath(result.path); // Highlights the path!
+  }
+
+  if (GuiButton({500, 20, 220, 50}, "Run 2-opt TSP")) {
+    auto result = TSP_LocalSearch2Opt(graph);
+
+    std::vector<std::string> pseudoCode = {
+        "1. Build an initial valid tour",
+        "2. Repeat until no improvement",
+        "3.   Try every 2-opt segment swap",
+        "4.   Accept swap if cost improves",
+        "5. Return best tour found"};
+
+    if (visualizer) {
+      visualizer->SetResult(result, pseudoCode);
+    }
+
+    graph.SetTSPPath(result.path);
   }
   // ---------------------------
 

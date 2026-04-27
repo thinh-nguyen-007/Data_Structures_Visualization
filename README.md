@@ -4,18 +4,15 @@ This project is a C++ + Raylib application for visualizing directed weighted gra
 
 Current implemented algorithm:
 - Brute Force TSP (with step-by-step visualization events)
+- Local Search TSP (2-opt)
 
 Planned/target algorithms:
 - Dynamic Programming TSP
 - Greedy TSP
-- Local Search TSP (2-opt)
 
 ## Project Structure and File Purpose
 
 ## Top-Level Files
-
-- `agents.md`
-	- Project requirements and guidance notes (learning goals, coding principles, feature expectations).
 
 - `CMakeLists.txt`
 	- Build configuration for CMake.
@@ -27,21 +24,18 @@ Planned/target algorithms:
 - `matrix.txt`
 	- Sample adjacency matrix input file used by the app's "Load File" feature.
 
-- `.gitignore`
-	- Git ignore rules for build artifacts and local environment files.
-
 - `README.md`
 	- This documentation file.
 
 ## assets/
 
 - `assets/Agbalumo-Regular.ttf`
-	- Main UI/code font loaded by the application (`App`) and used in graph labels/control text.
+	- Main UI/code font loaded by the application (`App`) and used in graph labels.
 
 - `assets/ChironGoRoundTC-VariableFont_wght (1).ttf`
 	- Description font used for the Sidepeak tracking panel text.
 
-## include/ and src/ (paired modules)
+## include/ and src/ 
 
 For each module below, `.h` defines interfaces/data types and `.cpp` implements behavior.
 
@@ -92,11 +86,10 @@ For each module below, `.h` defines interfaces/data types and `.cpp` implements 
 	- Edge data model.
 	- Stores directed connection `(u, v)`, edge weight, and edge color.
 
-## Single Header Utility
+## Third party Header
 
 - `include/raygui.h`
 	- External immediate-mode GUI library header used for buttons, panel, textbox, slider, labels.
-	- Not project-specific logic, but integrated by `InputHandler` and `Visualizer` UI code.
 
 ## Entry Point
 
