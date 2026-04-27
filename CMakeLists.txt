@@ -6,7 +6,7 @@ project(LinkedList LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# assume SFML is directly inside D:/
+# assume SFML is directly inside Desktop:/
 set(CMAKE_PREFIX_PATH "Desktop:/SFML-3.0.2")
 
 # Find SFML
