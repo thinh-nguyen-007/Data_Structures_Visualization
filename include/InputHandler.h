@@ -15,6 +15,7 @@ private:
   char nodeCountBuffer[16];
   bool nodeCountEditMode;
   bool showBruteForceSizeWarning;
+  float bruteForceSizeWarningTimer;
   bool darkMode;
 public:
   bool IsDarkMode() const { return darkMode; }

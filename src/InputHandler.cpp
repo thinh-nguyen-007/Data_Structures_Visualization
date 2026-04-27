@@ -13,6 +13,7 @@ InputHandler::InputHandler(Graph &graphRef, Visualizer *vis)
   textBoxEditMode = false;
   nodeCountEditMode = false;
   showBruteForceSizeWarning = false;
+  bruteForceSizeWarningTimer = 0.0f;
   darkMode = false;
 
 // Set a default string so you don't have to type it every time
@@ -20,7 +21,15 @@ InputHandler::InputHandler(Graph &graphRef, Visualizer *vis)
   strncpy(textBuffer, "matrix.txt", 256);
   strncpy(nodeCountBuffer, "8", 16);
 }
-void InputHandler::Update() {}
+void InputHandler::Update() {
+  if (showBruteForceSizeWarning) {
+    bruteForceSizeWarningTimer -= GetFrameTime();
+    if (bruteForceSizeWarningTimer <= 0.0f) {
+      showBruteForceSizeWarning = false;
+      bruteForceSizeWarningTimer = 0.0f;
+    }
+  }
+}
 void InputHandler::Draw() {
   // 1. The Main "Input Graph" toggle button
   if (GuiButton({20, 20, 200, 50}, "Input Graph")) {
@@ -31,8 +40,10 @@ void InputHandler::Draw() {
     int nodeCount = graph.GetVertexCount();
     if (nodeCount > 7) {
       showBruteForceSizeWarning = true;
+      bruteForceSizeWarningTimer = 3.0f;
     } else {
       showBruteForceSizeWarning = false;
+      bruteForceSizeWarningTimer = 0.0f;
       auto result = TSP_BruteForce(graph);
 
       std::vector<std::string> pseudoCode = {
@@ -78,21 +89,23 @@ void InputHandler::Draw() {
   if (showMenu) {
     // Draw background panel
     GuiPanel({20, 90, 470, 200}, "Graph Generators");
+    DrawText("!!Graph from 2 to 50 nodes!!", 225, 95, 10, GRAY);
 
     // Random graph row: Random graph [input] nodes [Generate]
     DrawText("Random graph", 40, 155, 20, DARKGRAY);
-    if (GuiTextBox({190, 145, 50, 40}, nodeCountBuffer, 35,
+    if (GuiTextBox({190, 145, 50, 40}, nodeCountBuffer, 16,
                    nodeCountEditMode)) {
       nodeCountEditMode = !nodeCountEditMode;
     }
     DrawText("nodes", 265, 155, 20, DARKGRAY);
     if (GuiButton({330, 145, 140, 50}, "Generate")) {
       int n = atoi(nodeCountBuffer);
-      if (n >= 2) {
+      if (n >= 2 && n <= 50) {
         auto randomMat = graph.GenerteRandomMatrix(n);
         graph.LoadFromMatrix(randomMat);
         if (visualizer) visualizer->Stop();
         showBruteForceSizeWarning = false;
+        bruteForceSizeWarningTimer = 0.0f;
         showMenu = false;
       }
     }
@@ -105,12 +118,13 @@ void InputHandler::Draw() {
     if (GuiButton({360, 210, 110, 50}, "Load File")) {
       auto fileMat = graph.getMatrix(std::string(textBuffer));
       int n = (int)fileMat.size();
-      if (!fileMat.empty() && n >= 2) {
+      if (!fileMat.empty() && n >= 2 && n <= 50) {
         graph.LoadFromMatrix(fileMat);
         if (visualizer) visualizer->Stop();
         showBruteForceSizeWarning = false;
+        bruteForceSizeWarningTimer = 0.0f;
+        showMenu = false;
       }
-      showMenu = false;
     }
   }
 

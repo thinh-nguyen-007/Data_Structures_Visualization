@@ -48,9 +48,22 @@ void Visualizer::DrawUI(int screenWidth, int screenHeight) {
     std::string bestPathText = "";
     if (!event.bestPath.empty()) {
         bestPathText = "Best Path: ";
-        for (size_t i = 0; i < event.bestPath.size(); i++) {
-            bestPathText += std::to_string(event.bestPath[i]);
-            if (i < event.bestPath.size() - 1) bestPathText += "->";
+        // Path includes return-to-start at the end, so size >= 9 means >= 8 nodes.
+        if (event.bestPath.size() >= 9) {
+            for (size_t i = 0; i < 4; i++) {
+                if (i > 0) bestPathText += "->";
+                bestPathText += std::to_string(event.bestPath[i]);
+            }
+            bestPathText += "->.....->";
+            for (size_t i = event.bestPath.size() - 3; i < event.bestPath.size(); i++) {
+                bestPathText += std::to_string(event.bestPath[i]);
+                if (i < event.bestPath.size() - 1) bestPathText += "->";
+            }
+        } else {
+            for (size_t i = 0; i < event.bestPath.size(); i++) {
+                bestPathText += std::to_string(event.bestPath[i]);
+                if (i < event.bestPath.size() - 1) bestPathText += "->";
+            }
         }
         bestPathText += " (Cost: " + std::to_string(event.bestCost) + ")";
     } else if (result.path.empty()) {

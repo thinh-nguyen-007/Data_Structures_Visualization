@@ -256,13 +256,30 @@ std::vector<std::vector<int>> Graph::getMatrix(const std::string &filename) {
 }
 
 void Graph::Update() {
-  // Tweak these constants to make your graph behave differently!
-  const float REPULSION_CONSTANT =
-      80000.0f; // Push much harder to spread large nodes
-  const float ATTRACTION_CONSTANT = 0.00005f; // Looser springs
-  const float GRAVITY = 0.01f;                // Gentle pull to center
-  const float DAMPING = 0.9f;
-  const float MAX_SPEED = 15.0f; // Higher speed limit
+  int nodeCount = (int)vertices.size();
+  if (nodeCount <= 1) {
+    return;
+  }
+
+  float dt = GetFrameTime();
+  if (dt > 0.05f) {
+    dt = 0.05f;
+  }
+  float dtScale = dt * 60.0f;
+
+  float largeGraphFactor = 1.0f;
+  if (nodeCount > 20) {
+    largeGraphFactor = 20.0f / (float)nodeCount;
+    if (largeGraphFactor < 0.4f) {
+      largeGraphFactor = 0.4f;
+    }
+  }
+
+  const float REPULSION_CONSTANT = 140000.0f * largeGraphFactor;
+  const float ATTRACTION_CONSTANT = 0.00003f;
+  const float GRAVITY = 0.01f;
+  const float DAMPING = (nodeCount > 20) ? 0.82f : 0.9f;
+  const float MAX_SPEED = (nodeCount > 20) ? 6.0f : 15.0f;
 
   Vector2 center = {screenWidth / 2.0f,
                     screenHeight / 2.0f}; // Center of the screen
@@ -272,16 +289,18 @@ void Graph::Update() {
     for (int j = i + 1; j < vertices.size(); j++) {
       float dx = vertices[i].location.x - vertices[j].location.x;
       float dy = vertices[i].location.y - vertices[j].location.y;
-      float distance = sqrt(dx * dx + dy * dy);
-      if (distance > 0.1f) {
-        // Force gets weaker the further away they are
-        float force = REPULSION_CONSTANT / distance;
+      float distSq = dx * dx + dy * dy;
+      if (distSq > 4.0f) {
+        float distance = sqrt(distSq);
+        // Use inverse-square repulsion and floor denominator to avoid spikes.
+        float safeDistSq = distSq + 100.0f;
+        float force = REPULSION_CONSTANT / safeDistSq;
         float forceX = (dx / distance) * force;
         float forceY = (dy / distance) * force;
-        vertices[i].velocity.x += forceX;
-        vertices[i].velocity.y += forceY;
-        vertices[j].velocity.x -= forceX;
-        vertices[j].velocity.y -= forceY;
+        vertices[i].velocity.x += forceX * dtScale;
+        vertices[i].velocity.y += forceY * dtScale;
+        vertices[j].velocity.x -= forceX * dtScale;
+        vertices[j].velocity.y -= forceY * dtScale;
       }
     }
   }
@@ -293,21 +312,24 @@ void Graph::Update() {
     float dx = vertices[v].location.x - vertices[u].location.x;
     float dy = vertices[v].location.y - vertices[u].location.y;
     float distance = sqrt(dx * dx + dy * dy);
-    // Force grows stronger the further they are stretched
-    float force = ATTRACTION_CONSTANT * (distance * distance);
-    float forceX = (dx / distance) * force;
-    float forceY = (dy / distance) * force;
-    vertices[u].velocity.x += forceX;
-    vertices[u].velocity.y += forceY;
-    vertices[v].velocity.x -= forceX;
-    vertices[v].velocity.y -= forceY;
+    if (distance > 1.0f) {
+      // Pull edges toward a target length to reduce oscillation in big graphs.
+      float targetLength = 1000.0f * pow((float)nodeCount / 10.0f, 0.5f);
+      float force = ATTRACTION_CONSTANT * (distance - targetLength) * distance;
+      float forceX = (dx / distance) * force;
+      float forceY = (dy / distance) * force;
+      vertices[u].velocity.x += forceX * dtScale;
+      vertices[u].velocity.y += forceY * dtScale;
+      vertices[v].velocity.x -= forceX * dtScale;
+      vertices[v].velocity.y -= forceY * dtScale;
+    }
   }
 
   // 3. APPLY FORCES, SPEED LIMITS & DAMPING
   for (auto &vertex : vertices) {
     // Gravity
-    vertex.velocity.x += (center.x - vertex.location.x) * GRAVITY;
-    vertex.velocity.y += (center.y - vertex.location.y) * GRAVITY;
+    vertex.velocity.x += (center.x - vertex.location.x) * GRAVITY * dtScale;
+    vertex.velocity.y += (center.y - vertex.location.y) * GRAVITY * dtScale;
     // --- NEW: THE SPEED LIMIT MATH ---
     // If our velocity is higher than MAX_SPEED, scale it back down!
     float speed = sqrt(vertex.velocity.x * vertex.velocity.x +
@@ -318,8 +340,8 @@ void Graph::Update() {
     }
     // ---------------------------------
     // Apply Velocity to Position
-    vertex.location.x += vertex.velocity.x;
-    vertex.location.y += vertex.velocity.y;
+    vertex.location.x += vertex.velocity.x * dtScale;
+    vertex.location.y += vertex.velocity.y * dtScale;
 
     // Apply Damping
     vertex.velocity.x *= DAMPING;

@@ -159,6 +159,15 @@ void PushEvent(std::vector<VisualizationEvent> &events, const Graph &graph,
                     description});
 }
 
+int GetTwoOptTryEventStride(int nodeCount) {
+  if (nodeCount <= 8) return 1;
+  if (nodeCount <= 12) return 2;
+  if (nodeCount <= 18) return 4;
+  if (nodeCount <= 25) return 8;
+  if (nodeCount <= 35) return 15;
+  return 25;
+}
+
 } // namespace
 
 // Recursive helper function for Backtracking
@@ -283,21 +292,36 @@ TSPResult TSP_LocalSearch2Opt(const Graph &graph) {
   PushEvent(events, graph, currentTour, currentCost, bestCost, bestTour, 1,
             "Build random initial tour.");
 
+  int tryEventStride = GetTwoOptTryEventStride(n);
   bool improved = true;
+  int pass = 0;
+  long long totalCheckedSwaps = 0;
   while (improved) {
+    pass++;
     improved = false;
+    long long checkedSwapsThisPass = 0;
     PushEvent(events, graph, currentTour, currentCost, bestCost, bestTour, 2,
-              "Scan all 2-opt swaps.");
+              "Scan 2-opt swaps (pass " + std::to_string(pass) + ").");
 
     for (int i = 1; i < n - 1 && !improved; ++i) {
       for (int j = i + 1; j < n && !improved; ++j) {
+        checkedSwapsThisPass++;
+        totalCheckedSwaps++;
+
         std::vector<int> candidate = currentTour;
         std::reverse(candidate.begin() + i, candidate.begin() + j + 1);
 
         int candidateCost = CalculatePathCost(graph, candidate);
-        PushEvent(events, graph, candidate, candidateCost, bestCost, bestTour,
-                  3, "Try swap between i=" + std::to_string(i) +
-                         " and j=" + std::to_string(j) + ".");
+
+        bool emitTryEvent =
+            (tryEventStride <= 1) || (checkedSwapsThisPass % tryEventStride == 0);
+        if (emitTryEvent) {
+          PushEvent(events, graph, candidate, candidateCost, bestCost, bestTour,
+                    3, "Try sampled swap i=" + std::to_string(i) +
+                           ", j=" + std::to_string(j) +
+                           " (checked: " +
+                           std::to_string((long long)totalCheckedSwaps) + ").");
+        }
 
         if (candidateCost < currentCost) {
           currentTour = candidate;
@@ -312,7 +336,9 @@ TSPResult TSP_LocalSearch2Opt(const Graph &graph) {
           PushEvent(events, graph, currentTour, currentCost, bestCost,
                     bestTour, 4,
                     "Accept improving swap. New cost: " +
-                        std::to_string(currentCost));
+                        std::to_string(currentCost) +
+                        " (checked this pass: " +
+                        std::to_string((long long)checkedSwapsThisPass) + ").");
         }
       }
     }

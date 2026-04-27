@@ -1,5 +1,4 @@
 # Graph Visualizer + TSP Visualization
-
 This project is a C++ + Raylib application for visualizing directed weighted graphs and the Traveling Salesperson Problem (TSP).
 
 ## Algorithms Overview
@@ -8,7 +7,6 @@ Current implemented algorithms:
 - Local Search TSP (2-opt)
 
 ### 1. Brute Force TSP (Backtracking)
-**Status:** ✅ Implemented  
 **File:** `src/Algorithms.cpp` - `TSP_BruteForce()` function
 
 **How it works:**
@@ -25,36 +23,35 @@ Current implemented algorithms:
 **Characteristics:**
 - **Time Complexity:** O(n!) in worst case (explores all permutations)
 - **Space Complexity:** O(n) for recursion stack
-- **Optimality:** ✅ Guarantees the globally optimal solution
+- **Optimality:**  Guarantees the globally optimal solution
 - **Use Case:** Small graphs (2-7 nodes recommended). Perfect for learning and understanding backtracking.
 - **Visualization:** Shows exact search tree traversal with every branch and backtrack.
 
 ---
-### 2. Local Search TSP (2-opt Heuristic)
-**Status:** ⏳ Planned  
-**Concept file:** Ready for implementation in `src/Algorithms.cpp`
+### 2. Local Search TSP (2-opt Heuristic) 
+**File:** `src/Algorithms.cpp` - `TSP_LocalSearch2Opt()` function
 
 **How it works:**
-- Starts with an initial tour (e.g., greedy nearest neighbor or random).
+- Starts with an initial valid tour (random incremental build, with nearest-neighbor fallback).
 - Repeatedly removes two edges from the tour and reconnects the path in a different way.
 - A **2-opt swap** reverses a segment of the tour to potentially reduce total distance.
 - Continues until no improvement can be made (local optimum reached).
 
 **Characteristics:**
-- **Time Complexity:** O(n²) per iteration, often converges in O(n) to O(n²) iterations
+- **Time Complexity:** O(n²) swap checks per pass (repeated until no improvement)
 - **Space Complexity:** O(n)
-- **Optimality:** ❌ Does NOT guarantee global optimum (finds local optimum)
+- **Optimality:**  Does NOT guarantee global optimum (finds local optimum)
 - **Use Case:** Medium to large graphs. Fast approximation when exact solutions are impractical.
 - **Visualization:** Shows incremental tour improvements with each 2-opt swap highlighted.
 
----
+
 ### Algorithm Comparison Table
 
 |           Feature            | Brute Force | Local Search (2-opt) |
 |------------------------------|-------------|----------------------|
 | **Optimal Solution**         |   Yes       |   No (local optimum) |
-| **Speed**                    |  Slow (n!)  |      Fast (n²)       |
-| **Graph Size**               | 2-7 nodes   |   10-1000+ nodes     |
+| **Speed**                    |  Slow (n!)  |   Fast (heuristic)   |
+| **Graph Size (this app)**    | 2-7 recommended | 2-50 supported   |
 
 ## Project Structure and File Purpose
 
@@ -76,7 +73,7 @@ Current implemented algorithms:
 ### assets/
 
 - `assets/Agbalumo-Regular.ttf`
-	- Main UI/code font loaded by the application (`App`) and used in graph labels.
+	-UI/code font loaded by the application (`App`) and used in graph labels.
 
 - `assets/ChironGoRoundTC-VariableFont_wght (1).ttf`
 	- Description font used for the Sidepeak tracking panel text.
@@ -114,9 +111,10 @@ For each module below, `.h` defines interfaces/data types and `.cpp` implements 
 - `include/InputHandler.h` + `src/InputHandler.cpp`
 	- UI interaction layer (raygui).
 	- Handles:
-		- Graph generation (2-7 nodes)
+		- Graph generation (2-50 nodes)
 		- Matrix-file loading
 		- Brute-force TSP run trigger
+		- Local-search (2-opt) run trigger
 		- Dark mode toggle
 	- Sends algorithm result to `Visualizer` and final path to `Graph`.
 
@@ -143,23 +141,26 @@ For each module below, `.h` defines interfaces/data types and `.cpp` implements 
 	- Program entry.
 	- Creates `App` and starts `Run()` loop.
 
-### build/ Folder
-
-- `build/` and subfolders (`_deps`, `.vcxproj`, solution files, CMake cache, generated binaries)
-	- Auto-generated build outputs from CMake/Visual Studio.
-	- Not hand-edited source files.
-	- Safe to recreate by re-configuring and rebuilding the project.
 
 ## Quick Logic Flow
 
 1. `main.cpp` creates `App`.
 2. `App` initializes window, fonts, graph, visualizer, and input handler.
-3. Every frame:
-	 - `Graph::Update()` animates node layout.
-	 - `InputHandler::Draw()` reads user GUI actions.
-	 - `Visualizer::Update()` advances playback timeline.
-	 - `App::Draw()` renders graph and UI overlays.
+3. Every frame has two phases:
+	- **Update phase** (`App::Update`):
+		- `Graph::Update()` animates node layout.
+		- `InputHandler::Update()` handles UI timers (e.g., brute-force size warning).
+		- `Visualizer::Update()` advances playback timeline.
+	- **Draw phase** (`App::Draw`):
+		- Graph is drawn (with event highlighting if visualizer is active).
+		- `Visualizer::DrawUI()` draws side panel and playback controls.
+		- `InputHandler::Draw()` renders and processes GUI buttons.
 4. On "Run Brute Force TSP":
-	 - `TSP_BruteForce(graph)` computes result + events.
-	 - `Visualizer` plays events step-by-step.
-	 - `Graph` highlights current/final TSP path.
+	- If graph size is greater than 7, show a warning and skip execution.
+	- Otherwise call `TSP_BruteForce(graph)` to generate result + events.
+	- Pass events to `Visualizer` for step-by-step playback.
+	- Pass final best path to `Graph` for path highlighting.
+5. On "Run 2-opt TSP":
+	- Call `TSP_LocalSearch2Opt(graph)` to generate an initial valid tour and improve it with 2-opt swaps.
+	- Pass events to `Visualizer` for step-by-step playback.
+	- Pass final best path to `Graph` for path highlighting.
