@@ -1,6 +1,7 @@
 #include "InputHandler.h"
 #include "Algorithms.h"
 #include "Visualizer.h"
+#include <cstdlib> // For atoi
 #include <cstring> // For strncpy
 // WARNING: You must define this EXACTLY ONCE before including raygui!
 #define RAYGUI_IMPLEMENTATION
@@ -10,11 +11,14 @@ InputHandler::InputHandler(Graph &graphRef, Visualizer *vis)
     : graph(graphRef), visualizer(vis) {
   showMenu = false;
   textBoxEditMode = false;
+  nodeCountEditMode = false;
+  showBruteForceSizeWarning = false;
   darkMode = false;
 
 // Set a default string so you don't have to type it every time
 #pragma warning(disable : 4996)
   strncpy(textBuffer, "matrix.txt", 256);
+  strncpy(nodeCountBuffer, "8", 16);
 }
 void InputHandler::Update() {}
 void InputHandler::Draw() {
@@ -24,21 +28,32 @@ void InputHandler::Draw() {
   }
   // --- NEW: Run TSP Button ---
   if (GuiButton({240, 20, 240, 50}, "Run Brute Force TSP")) {
-    auto result = TSP_BruteForce(graph);
+    int nodeCount = graph.GetVertexCount();
+    if (nodeCount > 7) {
+      showBruteForceSizeWarning = true;
+    } else {
+      showBruteForceSizeWarning = false;
+      auto result = TSP_BruteForce(graph);
 
-    std::vector<std::string> pseudoCode = {
-        "1. If all nodes visited: check return to start",
-        "2. If valid return path and cost < bestCost:",
-        "3.    Update bestCost and bestPath",
-        "4. For each unvisited neighbor V:",
-        "5.    Choose edge, mark V visited",
-        "6.    Recurse deeper (un-choose when done)"};
+      std::vector<std::string> pseudoCode = {
+          "1. If all nodes visited: check return to start",
+          "2. If valid return path and cost < bestCost:",
+          "3.    Update bestCost and bestPath",
+          "4. For each unvisited neighbor V:",
+          "5.    Choose edge, mark V visited",
+          "6.    Recurse deeper (un-choose when done)"};
 
-    if (visualizer) {
-      visualizer->SetResult(result, pseudoCode);
+      if (visualizer) {
+        visualizer->SetResult(result, pseudoCode);
+      }
+
+      graph.SetTSPPath(result.path); // Highlights the path!
     }
+  }
 
-    graph.SetTSPPath(result.path); // Highlights the path!
+  if (showBruteForceSizeWarning) {
+    DrawText("The graph is too large (> 7). Consider drawing smaller graph",
+             240, 75, 24, RED);
   }
 
   if (GuiButton({500, 20, 220, 50}, "Run 2-opt TSP")) {
@@ -63,19 +78,21 @@ void InputHandler::Draw() {
   if (showMenu) {
     // Draw background panel
     GuiPanel({20, 90, 470, 200}, "Graph Generators");
-    DrawText("!!ONLY DO 2 -> 7 NODES GRAPHS !!", 200, 95, 10, GRAY);
+    DrawText("Use any node count >= 2 for random graph", 40, 105, 18, GRAY);
 
-    // Row of vertex count buttons (2 to 7)
-    DrawText("Nodes:", 40, 150, 20, DARKGRAY);
-    float btnStartX = 120.0f;
-    float btnWidth = 55.0f;
-    float btnGap = 5.0f;
-    for (int n = 2; n <= 7; n++) {
-      float x = btnStartX + (n - 2) * (btnWidth + btnGap);
-      if (GuiButton({x, 140, btnWidth, 50}, TextFormat("%d", n))) {
+    // Random graph from any user-provided node count
+    DrawText("Random Nodes:", 40, 155, 20, DARKGRAY);
+    if (GuiTextBox({180, 145, 120, 50}, nodeCountBuffer, 16,
+                   nodeCountEditMode)) {
+      nodeCountEditMode = !nodeCountEditMode;
+    }
+    if (GuiButton({320, 145, 150, 50}, "Generate")) {
+      int n = atoi(nodeCountBuffer);
+      if (n >= 2) {
         auto randomMat = graph.GenerteRandomMatrix(n);
         graph.LoadFromMatrix(randomMat);
         if (visualizer) visualizer->Stop();
+        showBruteForceSizeWarning = false;
         showMenu = false;
       }
     }
@@ -88,9 +105,10 @@ void InputHandler::Draw() {
     if (GuiButton({360, 210, 110, 50}, "Load File")) {
       auto fileMat = graph.getMatrix(std::string(textBuffer));
       int n = (int)fileMat.size();
-      if (!fileMat.empty() && n >= 2 && n <= 7) {
+      if (!fileMat.empty() && n >= 2) {
         graph.LoadFromMatrix(fileMat);
         if (visualizer) visualizer->Stop();
+        showBruteForceSizeWarning = false;
       }
       showMenu = false;
     }

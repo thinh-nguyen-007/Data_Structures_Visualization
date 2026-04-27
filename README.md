@@ -2,15 +2,10 @@
 
 This project is a C++ + Raylib application for visualizing directed weighted graphs and the Traveling Salesperson Problem (TSP).
 
+## Algorithms Overview
 Current implemented algorithms:
 - Brute Force TSP (with step-by-step visualization events)
 - Local Search TSP (2-opt)
-
-Planned/target algorithms:
-- Dynamic Programming TSP
-- Greedy TSP
-
-## Algorithms Overview
 
 ### 1. Brute Force TSP (Backtracking)
 **Status:** ✅ Implemented  
@@ -53,8 +48,7 @@ Planned/target algorithms:
 - **Visualization:** Shows incremental tour improvements with each 2-opt swap highlighted.
 
 ---
-
-## Algorithm Comparison Table
+### Algorithm Comparison Table
 
 |           Feature            | Brute Force | Local Search (2-opt) |
 |------------------------------|-------------|----------------------|

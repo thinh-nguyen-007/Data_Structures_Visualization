@@ -12,6 +12,9 @@ private:
   bool showMenu;        // Toggles the drop-down panel
   char textBuffer[256]; // Holds your filename
   bool textBoxEditMode; // Is the textbox currently being typed in?
+  char nodeCountBuffer[16];
+  bool nodeCountEditMode;
+  bool showBruteForceSizeWarning;
   bool darkMode;
 public:
   bool IsDarkMode() const { return darkMode; }
