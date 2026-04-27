@@ -41,13 +41,15 @@ void Sidepeak::Draw(int screenWidth, int screenHeight,
     DrawText(description.c_str(), startX + 10, startY + 10, 20, WHITE);
   }
 
-  // Draw best path text (green, separated below)
+  // Draw best path text (green if found, red if no path)
   if (!bestPath.empty()) {
+    bool noPath = (bestPath.find("No Path") != std::string::npos);
+    Color pathColor = noPath ? RED : GREEN;
     if (fontLoaded) {
       DrawTextEx(descFont, bestPath.c_str(),
-                 {(float)startX + 20, (float)startY + 38}, 24, 1, GREEN);
+                 {(float)startX + 20, (float)startY + 38}, 24, 1, pathColor);
     } else {
-      DrawText(bestPath.c_str(), startX + 10, startY + 38, 20, GREEN);
+      DrawText(bestPath.c_str(), startX + 10, startY + 38, 20, pathColor);
     }
   }
 

@@ -53,6 +53,9 @@ void Visualizer::DrawUI(int screenWidth, int screenHeight) {
             if (i < event.bestPath.size() - 1) bestPathText += "->";
         }
         bestPathText += " (Cost: " + std::to_string(event.bestCost) + ")";
+    } else if (result.path.empty()) {
+        // No Hamiltonian cycle exists in this graph
+        bestPathText = "No Path found !!";
     }
     
     // Draw the sidepeak
