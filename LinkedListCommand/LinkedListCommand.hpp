@@ -70,6 +70,8 @@ public:
 
     void searchVisual(int value);
 
+    void deleteValue(int x);
+
     // ===== Control animation =====
     bool isBusy() const;
     bool isPaused() const { return paused; }

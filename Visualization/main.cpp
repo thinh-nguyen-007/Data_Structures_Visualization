@@ -108,7 +108,11 @@ int main() {
 
                 // ===== DELETE =====
                 if (btnDelete.contains(mouse)) {
-                    controller.popFront();
+                    std::vector<int> vals = parseInput(input.getText());
+
+                    if (!vals.empty()) {
+                        controller.deleteValue(vals[0]); // 👈 dùng value
+                    }
                 }
 
                 // ===== SEARCH =====

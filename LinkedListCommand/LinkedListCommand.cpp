@@ -256,3 +256,28 @@ void LinkedListController::loadFromFile(const std::string& filename) {
 
     currentMessage = "Loaded from " + filename;
 }
+
+void LinkedListController::deleteValue(int x) {
+    clearSteps();
+
+    LinkedList& list = getList();
+
+    Node* cur = list.getHead();
+    int idx = 0;
+
+    while (cur) {
+        steps.push_back({ LinkedListStep::Traverse, idx });
+
+        if (cur->data == x) {
+            steps.push_back({ LinkedListStep::Delete, idx });
+            list.removeAt(idx);
+            message = "Deleted " + std::to_string(x);
+            return;
+        }
+
+        cur = cur->next;
+        idx++;
+    }
+
+    message = "Value not found";
+}
