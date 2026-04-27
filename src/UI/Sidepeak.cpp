@@ -1,4 +1,4 @@
-#include "Sidepeak.h"
+#include "UI/Sidepeak.h"
 
 Sidepeak::Sidepeak() : fontLoaded(false) {}
 

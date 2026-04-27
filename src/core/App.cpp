@@ -1,4 +1,4 @@
-#include "App.h"
+#include "core/App.h"
 
 App::App(int width, int height, const char *title)
     : screenWidth(width), screenHeight(height),
@@ -20,7 +20,7 @@ App::App(int width, int height, const char *title)
   }
 
   // Load ChironGoRound font for the sidepeak description (tracking text)
-  Font descFont = LoadFontEx("assets/ChironGoRoundTC-VariableFont_wght (1).ttf", 48, 0, 250);
+  Font descFont = LoadFontEx("assets/ChironGoRoundTC-VariableFont_wght.ttf", 48, 0, 250);
   if (descFont.texture.id == 0) {
     descFont = GetFontDefault();
   }

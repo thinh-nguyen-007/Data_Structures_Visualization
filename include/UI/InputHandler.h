@@ -1,5 +1,5 @@
 #pragma once
-#include "Graph.h"
+#include "core/Graph.h"
 #include "raylib.h"
 #include <string>
 

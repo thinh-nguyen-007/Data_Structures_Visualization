@@ -1,6 +1,6 @@
 #pragma once
-#include "Edge.h"
-#include "Vertex.h"
+#include "model/Edge.h"
+#include "model/Vertex.h"
 #include "raygui.h"
 #include "raylib.h"
 #include <cmath>

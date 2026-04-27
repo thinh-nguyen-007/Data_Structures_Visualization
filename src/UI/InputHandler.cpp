@@ -1,6 +1,6 @@
-#include "InputHandler.h"
+#include "UI/InputHandler.h"
 #include "Algorithms.h"
-#include "Visualizer.h"
+#include "UI/Visualizer.h"
 #include <cstdlib> // For atoi
 #include <cstring> // For strncpy
 // WARNING: You must define this EXACTLY ONCE before including raygui!

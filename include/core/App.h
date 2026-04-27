@@ -2,9 +2,9 @@
 #define APP_H
 
 #include "Algorithms.h"
-#include "Graph.h"
-#include "Visualizer.h"
-#include "InputHandler.h"
+#include "core/Graph.h"
+#include "UI/Visualizer.h"
+#include "UI/InputHandler.h"
 #include "raylib.h"
 
 class App {

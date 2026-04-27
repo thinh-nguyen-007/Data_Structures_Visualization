@@ -1,7 +1,7 @@
 #pragma once
 #include "Algorithms.h"
-#include "Graph.h"
-#include "Sidepeak.h"
+#include "core/Graph.h"
+#include "UI/Sidepeak.h"
 #include "raylib.h"
 #include <vector>
 #include <string>

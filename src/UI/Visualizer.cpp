@@ -1,4 +1,4 @@
-#include "Visualizer.h"
+#include "UI/Visualizer.h"
 #include "raygui.h"
 
 Visualizer::Visualizer() {

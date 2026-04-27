@@ -1,5 +1,5 @@
 #include "Algorithms.h"
-#include "Graph.h"
+#include "core/Graph.h"
 #include <algorithm>
 #include <limits> // Required for std::numeric_limits
 #include <random>
