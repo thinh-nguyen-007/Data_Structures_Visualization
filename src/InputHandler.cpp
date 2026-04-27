@@ -29,10 +29,10 @@ void InputHandler::Draw() {
     std::vector<std::string> pseudoCode = {
         "1. If all nodes visited: check return to start",
         "2. If valid return path and cost < bestCost:",
-        "3.   Update bestCost and bestPath",
+        "3.    Update bestCost and bestPath",
         "4. For each unvisited neighbor V:",
-        "5.   Choose edge, mark V visited",
-        "6.   Recurse deeper (un-choose when done)"};
+        "5.    Choose edge, mark V visited",
+        "6.    Recurse deeper (un-choose when done)"};
 
     if (visualizer) {
       visualizer->SetResult(result, pseudoCode);
@@ -45,10 +45,10 @@ void InputHandler::Draw() {
     auto result = TSP_LocalSearch2Opt(graph);
 
     std::vector<std::string> pseudoCode = {
-        "1. Build an initial valid tour",
-        "2. Repeat until no improvement",
-        "3.   Try every 2-opt segment swap",
-        "4.   Accept swap if cost improves",
+        "1. Build an initial random valid tour",
+        "2. While we find an improvement",
+        "3.    Try to swap every pair of edges",
+        "4.    If the swap improves cost , accept it",
         "5. Return best tour found"};
 
     if (visualizer) {
