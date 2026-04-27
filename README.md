@@ -56,17 +56,18 @@ Responsible for rendering and user interaction.
 Follow these steps to compile and run the application from the terminal:
 
 ```bash
-# 1. Navigate to the project folder and create a build directory
-mkdir build && cd build
+# 1. Navigate to the project folder and generate
+cd "project location"
+cmake -S . -B build
 
-# 2. Configure the project with CMake
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+# 2. Build
+cmake --build build --config Debug
 
-# 3. Build the project
-cmake --build .
+# 3. Copy and paste the assets and arial.ttf file in Visualization folder in build folder
 
 # 4. Run the application (Choose the command based on your OS)
 # For Windows:
-.\Visualization\Debug\Visualization.exe
+cd build/Visualization/Debug
+./Visualization.exe
 # For Linux/macOS:
 ./Visualization/Visualization
