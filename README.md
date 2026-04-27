@@ -2,7 +2,7 @@
 
 This project is a C++ + Raylib application for visualizing directed weighted graphs and the Traveling Salesperson Problem (TSP).
 
-Current implemented algorithm:
+Current implemented algorithms:
 - Brute Force TSP (with step-by-step visualization events)
 - Local Search TSP (2-opt)
 
@@ -10,9 +10,61 @@ Planned/target algorithms:
 - Dynamic Programming TSP
 - Greedy TSP
 
+## Algorithms Overview
+
+### 1. Brute Force TSP (Backtracking)
+**Status:** ✅ Implemented  
+**File:** `src/Algorithms.cpp` - `TSP_BruteForce()` function
+
+**How it works:**
+- Uses recursive backtracking to explore all possible Hamiltonian cycles starting from vertex 0.
+- At each step, tries to extend the current path by visiting each unvisited neighbor.
+- Maintains the best (minimum cost) complete tour found so far.
+- When all vertices are visited, checks if there's an edge back to start vertex.
+- Records visualization events at every major decision:
+  - Visiting a node
+  - Checking an edge
+  - Choosing an edge
+  - Backtracking from a branch
+
+**Characteristics:**
+- **Time Complexity:** O(n!) in worst case (explores all permutations)
+- **Space Complexity:** O(n) for recursion stack
+- **Optimality:** ✅ Guarantees the globally optimal solution
+- **Use Case:** Small graphs (2-7 nodes recommended). Perfect for learning and understanding backtracking.
+- **Visualization:** Shows exact search tree traversal with every branch and backtrack.
+
+---
+### 2. Local Search TSP (2-opt Heuristic)
+**Status:** ⏳ Planned  
+**Concept file:** Ready for implementation in `src/Algorithms.cpp`
+
+**How it works:**
+- Starts with an initial tour (e.g., greedy nearest neighbor or random).
+- Repeatedly removes two edges from the tour and reconnects the path in a different way.
+- A **2-opt swap** reverses a segment of the tour to potentially reduce total distance.
+- Continues until no improvement can be made (local optimum reached).
+
+**Characteristics:**
+- **Time Complexity:** O(n²) per iteration, often converges in O(n) to O(n²) iterations
+- **Space Complexity:** O(n)
+- **Optimality:** ❌ Does NOT guarantee global optimum (finds local optimum)
+- **Use Case:** Medium to large graphs. Fast approximation when exact solutions are impractical.
+- **Visualization:** Shows incremental tour improvements with each 2-opt swap highlighted.
+
+---
+
+## Algorithm Comparison Table
+
+|           Feature            | Brute Force | Local Search (2-opt) |
+|------------------------------|-------------|----------------------|
+| **Optimal Solution**         |   Yes       |   No (local optimum) |
+| **Speed**                    |  Slow (n!)  |      Fast (n²)       |
+| **Graph Size**               | 2-7 nodes   |   10-1000+ nodes     |
+
 ## Project Structure and File Purpose
 
-## Top-Level Files
+### Top-Level Files
 
 - `CMakeLists.txt`
 	- Build configuration for CMake.
@@ -27,7 +79,7 @@ Planned/target algorithms:
 - `README.md`
 	- This documentation file.
 
-## assets/
+### assets/
 
 - `assets/Agbalumo-Regular.ttf`
 	- Main UI/code font loaded by the application (`App`) and used in graph labels.
@@ -35,7 +87,7 @@ Planned/target algorithms:
 - `assets/ChironGoRoundTC-VariableFont_wght (1).ttf`
 	- Description font used for the Sidepeak tracking panel text.
 
-## include/ and src/ 
+### include/ and src/ 
 
 For each module below, `.h` defines interfaces/data types and `.cpp` implements behavior.
 
@@ -86,18 +138,18 @@ For each module below, `.h` defines interfaces/data types and `.cpp` implements 
 	- Edge data model.
 	- Stores directed connection `(u, v)`, edge weight, and edge color.
 
-## Third party Header
+### Third party Header
 
 - `include/raygui.h`
 	- External immediate-mode GUI library header used for buttons, panel, textbox, slider, labels.
 
-## Entry Point
+### Entry Point
 
 - `src/main.cpp`
 	- Program entry.
 	- Creates `App` and starts `Run()` loop.
 
-## build/ Folder
+### build/ Folder
 
 - `build/` and subfolders (`_deps`, `.vcxproj`, solution files, CMake cache, generated binaries)
 	- Auto-generated build outputs from CMake/Visual Studio.

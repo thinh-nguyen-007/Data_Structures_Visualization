@@ -1,6 +1,8 @@
 #include "Algorithms.h"
 #include "Graph.h"
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 #include <limits> // Required for std::numeric_limits
 #include <string>
 
@@ -20,6 +22,41 @@ int CalculatePathCost(const Graph &graph, const std::vector<int> &path) {
     totalCost += weight;
   }
   return totalCost;
+}
+
+std::vector<int> BuildInitialRandomTour(const Graph &graph) {
+  int n = graph.GetVertexCount();
+  if (n == 0) {
+    return {};
+  }
+
+  // Create a list of vertices (excluding start node 0)
+  std::vector<int> nodes;
+  for (int i = 1; i < n; ++i) {
+    nodes.push_back(i);
+  }
+
+  // Shuffle the nodes randomly
+  for (size_t i = nodes.size() - 1; i > 0; --i) {
+    size_t j = rand() % (i + 1);
+    std::swap(nodes[i], nodes[j]);
+  }
+
+  // Build tour: start at 0, visit shuffled nodes, return to 0
+  std::vector<int> tour;
+  tour.push_back(0);
+  for (int node : nodes) {
+    tour.push_back(node);
+  }
+  tour.push_back(0);
+
+  // Verify all edges exist and are valid
+  int cost = CalculatePathCost(graph, tour);
+  if (cost == std::numeric_limits<int>::max()) {
+    return {}; // Invalid tour
+  }
+
+  return tour;
 }
 
 std::vector<int> BuildInitialNearestNeighborTour(const Graph &graph) {
@@ -198,7 +235,7 @@ TSPResult TSP_LocalSearch2Opt(const Graph &graph) {
     return result;
   }
 
-  std::vector<int> currentTour = BuildInitialNearestNeighborTour(graph);
+  std::vector<int> currentTour = BuildInitialRandomTour(graph);
   if (currentTour.empty()) {
     PushEvent(events, graph, {}, 0, 0, {}, 1,
               "Could not build an initial valid tour.");
@@ -213,7 +250,7 @@ TSPResult TSP_LocalSearch2Opt(const Graph &graph) {
   std::vector<int> bestTour = currentTour;
 
   PushEvent(events, graph, currentTour, currentCost, bestCost, bestTour, 1,
-            "Build initial tour.");
+            "Build random initial tour.");
 
   bool improved = true;
   while (improved) {
