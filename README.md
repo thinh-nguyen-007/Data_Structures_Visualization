@@ -1,5 +1,122 @@
 # Graph Visualizer + TSP Visualization
-This project is a C++ + Raylib application for visualizing directed weighted graphs and the Traveling Salesperson Problem (TSP).
+
+This project is a C++ + Raylib application for visualizing directed weighted graphs and Traveling Salesperson Problem (TSP) algorithms.
+
+Implemented algorithms:
+- Brute Force TSP (backtracking + visualization events)
+- Local Search TSP (2-opt + visualization events)
+
+## Filesystem Guide
+
+This repository is organized by responsibility so readers can find code quickly.
+
+```text
+CS163 Final Project/
+├─ assets/
+│  ├─ Agbalumo-Regular.ttf
+│  └─ ChironGoRoundTC-VariableFont_wght.ttf
+├─ include/
+│  ├─ core/
+│  │  ├─ App.h
+│  │  └─ Graph.h
+│  ├─ model/
+│  │  ├─ Edge.h
+│  │  └─ Vertex.h
+│  ├─ UI/
+│  │  ├─ InputHandler.h
+│  │  ├─ Sidepeak.h
+│  │  └─ Visualizer.h
+│  ├─ Algorithms.h
+│  └─ raygui.h
+├─ src/
+│  ├─ core/
+│  │  ├─ App.cpp
+│  │  └─ Graph.cpp
+│  ├─ model/
+│  │  ├─ Edge.cpp
+│  │  └─ Vertex.cpp
+│  ├─ UI/
+│  │  ├─ InputHandler.cpp
+│  │  ├─ Sidepeak.cpp
+│  │  └─ Visualizer.cpp
+│  ├─ Algorithms.cpp
+│  └─ main.cpp
+├─ CMakeLists.txt
+├─ matrix.txt
+├─ README.md
+└─ LICENSE
+```
+
+## Folder Purpose
+
+### assets/
+- Stores fonts used by the UI.
+- `Agbalumo-Regular.ttf`: main app font for labels and main text.
+- `ChironGoRoundTC-VariableFont_wght (1).ttf`: side panel description font.
+
+### include/
+- Public declarations (interfaces, structs, class definitions).
+- Split by feature area:
+  - `core/`: high-level app and graph system declarations.
+  - `model/`: lightweight data objects (`Edge`, `Vertex`).
+  - `UI/`: user interaction and visualization panels.
+  - `Algorithms.h`: algorithm contracts and event/result structs.
+
+### src/
+- Implementations for headers in `include/`.
+- Mirrors the same split (`core`, `model`, `UI`) so each header has a natural implementation location.
+- `main.cpp` is program entry.
+- `Algorithms.cpp` contains TSP algorithm implementations.
+
+## File-by-File Purpose
+
+### Core
+- `include/core/App.h` + `src/core/App.cpp`
+  - Creates window, initializes systems, runs the main update/draw loop, handles camera behavior.
+
+- `include/core/Graph.h` + `src/core/Graph.cpp`
+  - Graph storage, matrix loading/random generation, force-directed layout, graph rendering, and TSP path highlighting.
+
+### Models
+- `include/model/Vertex.h` + `src/model/Vertex.cpp`
+  - Vertex data (position, velocity, index, style fields).
+
+- `include/model/Edge.h` + `src/model/Edge.cpp`
+  - Edge data (directed endpoints, weight, style fields).
+
+### UI
+- `include/UI/InputHandler.h` + `src/UI/InputHandler.cpp`
+  - GUI controls for graph loading/generation, algorithm execution, dark mode, and warning messages.
+
+- `include/UI/Visualizer.h` + `src/UI/Visualizer.cpp`
+  - Playback engine for algorithm events (play/pause/prev/next/speed/stop).
+
+- `include/UI/Sidepeak.h` + `src/UI/Sidepeak.cpp`
+  - Side panel that displays step descriptions, best path, and highlighted pseudocode lines.
+
+### Algorithms
+- `include/Algorithms.h` + `src/Algorithms.cpp`
+  - Algorithm input/output contracts (`VisualizationEvent`, `TSPResult`) and TSP implementations:
+    - `TSP_BruteForce`
+    - `TSP_LocalSearch2Opt`
+
+### Entry and Build
+- `src/main.cpp`
+  - Entry point. Creates `App` and starts `Run()`.
+
+- `CMakeLists.txt`
+  - Build script. Sets C++ standard, fetches raylib, and builds all `src/*.cpp` files.
+
+- `matrix.txt`
+  - Example matrix input for file-based graph loading.
+
+## How Data Flows Across Folders
+1. `main.cpp` starts `App` (`core`).
+2. `App` updates `Graph` (`core`), `InputHandler` (`UI`), and `Visualizer` (`UI`) every frame.
+3. `InputHandler` launches algorithms from `Algorithms.cpp`.
+4. Algorithms return `TSPResult` + event timeline.
+5. `Visualizer` replays events and `Graph` highlights current/final paths.
+6. `Sidepeak` shows explanation text and pseudocode highlight for each event.
 
 ## Algorithms Overview
 Current implemented algorithms:
@@ -51,116 +168,4 @@ Current implemented algorithms:
 |------------------------------|-------------|----------------------|
 | **Optimal Solution**         |   Yes       |   No (local optimum) |
 | **Speed**                    |  Slow (n!)  |   Fast (heuristic)   |
-| **Graph Size (this app)**    | 2-7 recommended | 2-50 supported   |
-
-## Project Structure and File Purpose
-
-### Top-Level Files
-
-- `CMakeLists.txt`
-	- Build configuration for CMake.
-	- Sets C++17, downloads Raylib via `FetchContent`, builds executable from `src/*.cpp`.
-
-- `LICENSE`
-	- Repository license text.
-
-- `matrix.txt`
-	- Sample adjacency matrix input file used by the app's "Load File" feature.
-
-- `README.md`
-	- This documentation file.
-
-### assets/
-
-- `assets/Agbalumo-Regular.ttf`
-	-UI/code font loaded by the application (`App`) and used in graph labels.
-
-- `assets/ChironGoRoundTC-VariableFont_wght (1).ttf`
-	- Description font used for the Sidepeak tracking panel text.
-
-### include/ and src/ 
-
-For each module below, `.h` defines interfaces/data types and `.cpp` implements behavior.
-
-- `include/App.h` + `src/App.cpp`
-	- Main application coordinator.
-	- Owns `Graph`, `Visualizer`, `InputHandler`, camera, and fonts.
-	- Initializes window/resources and runs the frame loop (`Update` + `Draw`).
-	- Handles camera pan/zoom and global rendering order.
-
-- `include/Graph.h` + `src/Graph.cpp`
-	- Core graph model + renderer + auto-layout simulation.
-	- Stores vertices, edges, adjacency matrix, and current highlighted TSP path.
-	- Loads graph from matrix/random generator.
-	- Draws nodes, directed edges, weights, and event-based highlights.
-	- Updates vertex positions using force-based layout (repulsion/attraction/gravity/damping).
-
-- `include/Algorithms.h` + `src/Algorithms.cpp`
-	- TSP algorithm contract and brute-force implementation.
-	- Defines:
-		- `VisualizationEvent`: one snapshot step for playback/highlighting.
-		- `TSPResult`: final path/cost plus all events.
-	- Implements recursive backtracking brute-force TSP and emits events at key decision points.
-
-- `include/Visualizer.h` + `src/Visualizer.cpp`
-	- Event playback controller.
-	- Receives `TSPResult`, stores timeline, controls step index, play/pause, and speed.
-	- Exposes current event for graph highlighting.
-	- Draws playback controls (`Play`, `Prev`, `Next`, speed slider, `Stop`).
-
-- `include/InputHandler.h` + `src/InputHandler.cpp`
-	- UI interaction layer (raygui).
-	- Handles:
-		- Graph generation (2-50 nodes)
-		- Matrix-file loading
-		- Brute-force TSP run trigger
-		- Local-search (2-opt) run trigger
-		- Dark mode toggle
-	- Sends algorithm result to `Visualizer` and final path to `Graph`.
-
-- `include/Sidepeak.h` + `src/Sidepeak.cpp`
-	- Side panel renderer for visualization guidance.
-	- Displays event description, best path/cost, pseudocode, and active highlighted line.
-
-- `include/Vertex.h` + `src/Vertex.cpp`
-	- Vertex data model.
-	- Stores node position, index, display color, and simulation velocity.
-
-- `include/Edge.h` + `src/Edge.cpp`
-	- Edge data model.
-	- Stores directed connection `(u, v)`, edge weight, and edge color.
-
-### Third party Header
-
-- `include/raygui.h`
-	- External immediate-mode GUI library header used for buttons, panel, textbox, slider, labels.
-
-### Entry Point
-
-- `src/main.cpp`
-	- Program entry.
-	- Creates `App` and starts `Run()` loop.
-
-
-## Quick Logic Flow
-
-1. `main.cpp` creates `App`.
-2. `App` initializes window, fonts, graph, visualizer, and input handler.
-3. Every frame has two phases:
-	- **Update phase** (`App::Update`):
-		- `Graph::Update()` animates node layout.
-		- `InputHandler::Update()` handles UI timers (e.g., brute-force size warning).
-		- `Visualizer::Update()` advances playback timeline.
-	- **Draw phase** (`App::Draw`):
-		- Graph is drawn (with event highlighting if visualizer is active).
-		- `Visualizer::DrawUI()` draws side panel and playback controls.
-		- `InputHandler::Draw()` renders and processes GUI buttons.
-4. On "Run Brute Force TSP":
-	- If graph size is greater than 7, show a warning and skip execution.
-	- Otherwise call `TSP_BruteForce(graph)` to generate result + events.
-	- Pass events to `Visualizer` for step-by-step playback.
-	- Pass final best path to `Graph` for path highlighting.
-5. On "Run 2-opt TSP":
-	- Call `TSP_LocalSearch2Opt(graph)` to generate an initial valid tour and improve it with 2-opt swaps.
-	- Pass events to `Visualizer` for step-by-step playback.
-	- Pass final best path to `Graph` for path highlighting.
+| **Graph Size**               |    2-7      |      2 - 50          |
