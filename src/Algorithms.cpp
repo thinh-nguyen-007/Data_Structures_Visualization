@@ -7,6 +7,8 @@
 
 namespace {
 
+std::vector<int> BuildInitialNearestNeighborTour(const Graph &graph);
+
 int CalculatePathCost(const Graph &graph, const std::vector<int> &path) {
   if (path.size() < 2) {
     return std::numeric_limits<int>::max();
@@ -29,31 +31,60 @@ std::vector<int> BuildInitialRandomTour(const Graph &graph) {
     return {};
   }
 
-  // Create a list of vertices (excluding start node 0)
-  std::vector<int> nodes;
-  for (int i = 1; i < n; ++i) {
-    nodes.push_back(i);
-  }
-
-  // A random order may be invalid in directed/sparse graphs; retry several times.
+  // Build a random valid tour incrementally; this is much more reliable than
+  // testing random full permutations on sparse directed graphs.
   static std::mt19937 rng(std::random_device{}());
-  const int maxAttempts = 200;
+  const int maxAttempts = std::max(300, n * 80);
 
   for (int attempt = 0; attempt < maxAttempts; ++attempt) {
-    std::shuffle(nodes.begin(), nodes.end(), rng);
-
-    // Build tour: start at 0, visit shuffled nodes, return to 0
     std::vector<int> tour;
-    tour.push_back(0);
-    for (int node : nodes) {
-      tour.push_back(node);
-    }
-    tour.push_back(0);
+    std::vector<bool> visited(n, false);
+    int current = 0;
 
+    tour.push_back(0);
+    visited[0] = true;
+    bool failed = false;
+
+    for (int step = 1; step < n; ++step) {
+      std::vector<int> candidates;
+      for (int next = 1; next < n; ++next) {
+        if (!visited[next] && graph.GetEdgeWeight(current, next) > 0) {
+          candidates.push_back(next);
+        }
+      }
+
+      if (candidates.empty()) {
+        failed = true;
+        break;
+      }
+
+      std::shuffle(candidates.begin(), candidates.end(), rng);
+
+      int chosen = candidates.front();
+      visited[chosen] = true;
+      tour.push_back(chosen);
+      current = chosen;
+    }
+
+    if (failed) {
+      continue;
+    }
+
+    if (graph.GetEdgeWeight(current, 0) <= 0) {
+      continue;
+    }
+
+    tour.push_back(0);
     int cost = CalculatePathCost(graph, tour);
     if (cost != std::numeric_limits<int>::max()) {
       return tour;
     }
+  }
+
+  // Fallback: try nearest-neighbor so 2-opt can still run on many inputs.
+  std::vector<int> nearestTour = BuildInitialNearestNeighborTour(graph);
+  if (!nearestTour.empty()) {
+    return nearestTour;
   }
 
   return {};

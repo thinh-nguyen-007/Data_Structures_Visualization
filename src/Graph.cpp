@@ -221,10 +221,10 @@ std::vector<std::vector<int>> Graph::GenerteRandomMatrix(int numVertices) {
       matrix[from][to] = GetRandomValue(1, 100);
       matrix[to][from] = GetRandomValue(1, 100);
     }
-    // Randomly add extra edges (~60% chance each)
+    // Randomly add extra edges (~70% chance each)
     for (int i = 0; i < numVertices; i++) {
       for (int j = 0; j < numVertices; j++) {
-        if (i != j && matrix[i][j] == 0 && GetRandomValue(1, 100) <= 40) {
+        if (i != j && matrix[i][j] == 0 && GetRandomValue(1, 100) <= 70) {
           matrix[i][j] = GetRandomValue(1, 100);
         }
       }

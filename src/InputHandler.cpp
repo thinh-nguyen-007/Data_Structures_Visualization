@@ -78,15 +78,15 @@ void InputHandler::Draw() {
   if (showMenu) {
     // Draw background panel
     GuiPanel({20, 90, 470, 200}, "Graph Generators");
-    DrawText("Use any node count >= 2 for random graph", 40, 105, 18, GRAY);
 
-    // Random graph from any user-provided node count
-    DrawText("Random Nodes:", 40, 155, 20, DARKGRAY);
-    if (GuiTextBox({180, 145, 120, 50}, nodeCountBuffer, 16,
+    // Random graph row: Random graph [input] nodes [Generate]
+    DrawText("Random graph", 40, 155, 20, DARKGRAY);
+    if (GuiTextBox({190, 145, 50, 40}, nodeCountBuffer, 35,
                    nodeCountEditMode)) {
       nodeCountEditMode = !nodeCountEditMode;
     }
-    if (GuiButton({320, 145, 150, 50}, "Generate")) {
+    DrawText("nodes", 265, 155, 20, DARKGRAY);
+    if (GuiButton({330, 145, 140, 50}, "Generate")) {
       int n = atoi(nodeCountBuffer);
       if (n >= 2) {
         auto randomMat = graph.GenerteRandomMatrix(n);
