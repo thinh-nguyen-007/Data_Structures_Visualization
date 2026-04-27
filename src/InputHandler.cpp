@@ -58,6 +58,7 @@ void InputHandler::Draw() {
       if (GuiButton({x, 140, btnWidth, 50}, TextFormat("%d", n))) {
         auto randomMat = graph.GenerteRandomMatrix(n);
         graph.LoadFromMatrix(randomMat);
+        if (visualizer) visualizer->Stop();
         showMenu = false;
       }
     }
@@ -72,6 +73,7 @@ void InputHandler::Draw() {
       int n = (int)fileMat.size();
       if (!fileMat.empty() && n >= 2 && n <= 7) {
         graph.LoadFromMatrix(fileMat);
+        if (visualizer) visualizer->Stop();
       }
       showMenu = false;
     }
