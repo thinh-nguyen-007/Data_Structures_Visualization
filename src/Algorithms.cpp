@@ -1,9 +1,8 @@
 #include "Algorithms.h"
 #include "Graph.h"
 #include <algorithm>
-#include <cstdlib>
-#include <ctime>
 #include <limits> // Required for std::numeric_limits
+#include <random>
 #include <string>
 
 namespace {
@@ -36,27 +35,28 @@ std::vector<int> BuildInitialRandomTour(const Graph &graph) {
     nodes.push_back(i);
   }
 
-  // Shuffle the nodes randomly
-  for (size_t i = nodes.size() - 1; i > 0; --i) {
-    size_t j = rand() % (i + 1);
-    std::swap(nodes[i], nodes[j]);
+  // A random order may be invalid in directed/sparse graphs; retry several times.
+  static std::mt19937 rng(std::random_device{}());
+  const int maxAttempts = 200;
+
+  for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+    std::shuffle(nodes.begin(), nodes.end(), rng);
+
+    // Build tour: start at 0, visit shuffled nodes, return to 0
+    std::vector<int> tour;
+    tour.push_back(0);
+    for (int node : nodes) {
+      tour.push_back(node);
+    }
+    tour.push_back(0);
+
+    int cost = CalculatePathCost(graph, tour);
+    if (cost != std::numeric_limits<int>::max()) {
+      return tour;
+    }
   }
 
-  // Build tour: start at 0, visit shuffled nodes, return to 0
-  std::vector<int> tour;
-  tour.push_back(0);
-  for (int node : nodes) {
-    tour.push_back(node);
-  }
-  tour.push_back(0);
-
-  // Verify all edges exist and are valid
-  int cost = CalculatePathCost(graph, tour);
-  if (cost == std::numeric_limits<int>::max()) {
-    return {}; // Invalid tour
-  }
-
-  return tour;
+  return {};
 }
 
 std::vector<int> BuildInitialNearestNeighborTour(const Graph &graph) {
