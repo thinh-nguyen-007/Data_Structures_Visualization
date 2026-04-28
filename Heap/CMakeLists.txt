@@ -40,13 +40,6 @@ target_link_libraries(HeapApp
         SFML::System
 )
 
-# Copy assets folder 
-add_custom_command(TARGET HeapApp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets
-    $<TARGET_FILE_DIR:HeapApp>/assets
-)
-
 # Copy SFML DLLs (Windows only) 
 add_custom_command(TARGET HeapApp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
