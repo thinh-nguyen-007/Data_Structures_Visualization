@@ -37,6 +37,7 @@ extern vector <VisualizedTree*> AVLTreeState;
 extern vector <VisualizedTree*> AVLTreeScene;
 
 void CreateAVLTreeScene(void);
+void UpdateAVLTreeSceneNumber(int x);
 void DeployAVLTreeVisualization(void);
 void DrawAllAVLTree(void);
 void AVLTreeScenesInit(void);
@@ -47,3 +48,4 @@ void RecuresiveDraw(AVLTree::node* tree, VisualizedTree* visualizedNode, Vector2
 void OutputTree(void);
 void FlattenTheTree(VisualizedTree* AVLTree, vector <VisualizedTree*> &VisualizedNodes, vector <VisualizedTree*> &version2, long long FixedPoint);
 void ComputeInformation(void);
+int GetAVLTreeSceneNumber(void);

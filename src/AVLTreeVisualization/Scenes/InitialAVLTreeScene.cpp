@@ -11,6 +11,7 @@
 
 using namespace std;
 
+bool EndVisualizingInitialAVLTree = false;
 vector <VisualizedTree*> InitialVisualizedNodes;
 
 void CreateInitialVisualizedAVLTree(VisualizedTree* AVLTree) {
@@ -76,6 +77,10 @@ void DrawinitialAVLTree(void) {
 
         CurrentNode++;
         started = false;
+
+        if (CurrentNode >= InitialVisualizedNodes.size()) {
+            EndVisualizingInitialAVLTree = true;
+        }
     }
 }
 
@@ -86,10 +91,12 @@ void DeployInitialAVLTreeScene(void) {
         VisualizedTree* VisualizedAVLTree = AVLTreeState.back();
 
         CreateInitialVisualizedAVLTree(VisualizedAVLTree);
-
-        AVLTreeScene.push_back(AVLTreeState.back());
-        AVLTreeState.clear();
     }   
 
     DrawinitialAVLTree();
+
+    if (EndVisualizingInitialAVLTree) {
+        AVLTreeScene.push_back(AVLTreeState.back());
+        AVLTreeState.clear();
+    }
 }

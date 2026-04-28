@@ -44,14 +44,17 @@ int main() {
     // for (int i = 0; i < a.size(); i++) 
     //     cout << a[i] << " ";
 
-    int n = 3;
+    int n = 4;
     vector <long long> a;
     
-    for (int i = 1; i <= 1000; i++) 
+    for (int i = 1; i <= n; i++)
         a.push_back(i);
 
-    shuffle(a.begin(), a.end(), rng);
-    a.resize(n);
+    // for (int i = 1; i <= 1000; i++) 
+    //     a.push_back(i);
+
+    // shuffle(a.begin(), a.end(), rng);
+    // a.resize(n);
 
     Tree.Initialize(a);
 
@@ -137,6 +140,11 @@ int main() {
     // cout << endl;
 
     bool DoInsert = true;
+    bool DoDelete = true;
+
+    UpdateAVLTreeSceneNumber(0);
+
+    float TTimer = 0;
 
     // DeployInitialAVLTreeScene();
 
@@ -146,7 +154,21 @@ int main() {
 
         ClearBackground(RAYWHITE);
 
-        DeployInitialAVLTreeScene();
+        DeployAVLTreeVisualization();
+
+        TTimer += GetFrameTime();
+
+        if (DoInsert && GetAVLTreeSceneNumber() == 3) {
+            DoInsert = false;
+            Tree.Insert(Tree.tree, 1000);
+            UpdateAVLTreeSceneNumber(1);
+        }
+
+        if (DoDelete && GetAVLTreeSceneNumber() == 3 && TTimer >= 11.0f) {
+            DoDelete = false;
+            Tree.Delete(Tree.tree, 4);
+            UpdateAVLTreeSceneNumber(2);
+        }
 
         // if (DoInsert) {
         //     DoInsert = false;

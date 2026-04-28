@@ -10,5 +10,4 @@
 using namespace std;
 
 void InsertNodeAVLTreeScene(vector <VisualizedTree*> &InsertVisualizedNodes);    
-void RotateAVLTreeScene(VisualizedTree* node);
 void DrawInsertAVLTreeScene(void);

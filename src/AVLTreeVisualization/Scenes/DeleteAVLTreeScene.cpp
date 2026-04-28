@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <string>
 #include "VisualizeAVLTree.h"
+#include "DeleteAVLTreeScene.h"
 #include "AVLTree.h"
-#include "InsertAVLTreeScene.h"
 #include "DrawObjects.h"
 #include "raylib.h"
 #include "raymath.h"
@@ -14,11 +14,47 @@ using namespace std;
 namespace {
     bool Visualizing = false;
     bool EndVisualizing = false;
+    bool DeleteYet = false;
+    bool EndVisualizing1 = false;
     int scenex = 0;
-    vector <VisualizedTree*> InsertVisualizedNodes;
+    vector <VisualizedTree*> DeleteVisualizedNodes;
 }
 
-void InsertNodeAVLTreeScene(vector <VisualizedTree*> &InsertVisualizedNodes) {
+void DeleteNodes(vector <VisualizedTree*> &DeleteVisualizedNodes) {
+    static float timer = 0.0f;
+    static bool started = false;
+    static float duration = 1.0f;
+    static int CurrentNode = DeleteVisualizedNodes.size();   
+
+    if (!started) {
+        timer = 0.0f;
+        started = true;
+    }
+
+    float Time = timer / duration;
+    Time = Clamp(Time, 0.0f, 1.0f);
+
+    for (int i = 0; i < DeleteVisualizedNodes.size(); i++) {
+        VisualizedTree* node = DeleteVisualizedNodes[i];
+
+        DrawRing(node->node.targetPos, node->node.radius - node->node.thickness, node->node.radius, 0.0f, 360.0f, 100, Fade(RED, 1.0f - Time));
+        DrawShorterLineStartEnd(node->edge.start, node->node.targetPos, 50.0f, 5.0f, Fade(RED, 1.0f - Time));
+        DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.targetPos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 5) / 2), 30, 5, Fade(RED, 1.0f - Time));
+    }
+
+    if (timer >= duration) {
+        CurrentNode++;
+        started = false;
+
+        if (CurrentNode >= DeleteVisualizedNodes.size()) {
+            Visualizing = false;
+            EndVisualizing1 = true;
+            CurrentNode = 0;
+        }
+    }
+}
+
+void DeleteNodeAVLTreeScene(vector <VisualizedTree*> &DeleteVisualizedNodes) {
     static float timer = 0.0f;
     static bool started = false;
     static float duration = 1.0f;
@@ -27,22 +63,22 @@ void InsertNodeAVLTreeScene(vector <VisualizedTree*> &InsertVisualizedNodes) {
     static Vector2 startNodePos;
     static Vector2 endEdgePos;
 
-    for (int i = 0; i < min(CurrentNode, (int)InsertVisualizedNodes.size()); i++) {
-        VisualizedTree* node = InsertVisualizedNodes[i];
+    for (int i = 0; i < min(CurrentNode, (int)DeleteVisualizedNodes.size()); i++) {
+        VisualizedTree* node = DeleteVisualizedNodes[i];
 
         DrawRing(node->node.targetPos, node->node.radius - node->node.thickness, node->node.radius, 0.0f, 360.0f, 100, node->node.color);
         DrawShorterLineStartEnd(node->edge.targetStart, node->edge.targetEnd, 50.0f, node->edge.thickness, node->edge.color);
         DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.targetPos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 5) / 2), 30, 5, BLACK);
     }
 
-    VisualizedTree* node = InsertVisualizedNodes[CurrentNode];
+    VisualizedTree* node = DeleteVisualizedNodes[CurrentNode];
 
     if (!started) {
         timer = 0.0f;
         started = true;
 
-        startNodePos = InsertVisualizedNodes[CurrentNode]->node.pos;
-        endEdgePos = InsertVisualizedNodes[CurrentNode]->edge.end;
+        startNodePos = DeleteVisualizedNodes[CurrentNode]->node.pos;
+        endEdgePos = DeleteVisualizedNodes[CurrentNode]->edge.end;
     }
 
     timer += GetFrameTime();
@@ -64,7 +100,7 @@ void InsertNodeAVLTreeScene(vector <VisualizedTree*> &InsertVisualizedNodes) {
         CurrentNode++;
         started = false;
 
-        if (CurrentNode >= InsertVisualizedNodes.size()) {
+        if (CurrentNode >= DeleteVisualizedNodes.size()) {
             Visualizing = false;
             EndVisualizing = true;
             CurrentNode = 0;
@@ -72,8 +108,9 @@ void InsertNodeAVLTreeScene(vector <VisualizedTree*> &InsertVisualizedNodes) {
     }
 }
 
-void DrawInsertAVLTreeScene(void) { 
+void DrawDeleteAVLTreeScene(void) {
     static vector <VisualizedTree*> version2, OldVersion;
+    static VisualizedTree* DeleteNode;
 
     if (AVLTreeState.size() == 0) {
         return;
@@ -81,21 +118,41 @@ void DrawInsertAVLTreeScene(void) {
     else {
         if (scenex == 0) {
             if (!Visualizing) {
-                OldVersion.clear();
-                InsertVisualizedNodes.clear();
-                version2.clear();
-
-                long long data = RotateState[scenex].first;
-
-                if (AVLTreeState[scenex] == nullptr) cout << -1 << endl;
-
-                FlattenTheTree(AVLTreeState[scenex], InsertVisualizedNodes, version2, data);
-
                 Visualizing = true;
+                long long data = RotateState[0].first;
+
+                OldVersion.clear();
+                version2.clear();
+                DeleteVisualizedNodes.clear();
+
+                FlattenTheTree(AVLTreeScene.back(), OldVersion, version2, -1);
+                FlattenTheTree(AVLTreeState[scenex], DeleteVisualizedNodes, version2, -1);
+                
+                vector <VisualizedTree*> temp;
+
+                for (int i = 0; i < DeleteVisualizedNodes.size(); i++) {
+                    for (int j = 0; j < OldVersion.size(); j++) {
+                        if (DeleteVisualizedNodes[i]->data == OldVersion[j]->data) {
+                            if (DeleteVisualizedNodes[i]->node.targetPos != OldVersion[j]->node.targetPos) {
+                                version2.push_back(DeleteVisualizedNodes[i]);
+                                version2.back()->node.pos = OldVersion[j]->node.targetPos;
+                            }
+                            else {
+                                temp.push_back(DeleteVisualizedNodes[i]);
+                            }
+                        }
+
+                        if (OldVersion[j]->data == data) {
+                            DeleteNode = OldVersion[j];
+                        }
+                    }
+                }
+
+                DeleteVisualizedNodes.swap(temp);
             }
 
-            for (int i = 0; i < InsertVisualizedNodes.size(); i++) {
-                VisualizedTree* node = InsertVisualizedNodes[i];
+            for (int i = 0; i < DeleteVisualizedNodes.size(); i++) {
+                VisualizedTree* node = DeleteVisualizedNodes[i];
                 node->node.pos = node->node.targetPos;
 
                 DrawRing(node->node.targetPos, node->node.radius - node->node.thickness, node->node.radius, 0.0f, 360.0f, 100, node->node.color);
@@ -103,7 +160,14 @@ void DrawInsertAVLTreeScene(void) {
                 DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.pos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 3) / 2), 30, 3, BLACK);
             }
 
-            InsertNodeAVLTreeScene(version2);
+            vector <VisualizedTree*> temp;
+            temp.push_back(DeleteNode);
+
+            DeleteNodes(temp);
+
+            if (EndVisualizing1) {
+                DeleteNodeAVLTreeScene(version2);
+            }   
 
             if (EndVisualizing) {
                 scenex++;
@@ -116,10 +180,10 @@ void DrawInsertAVLTreeScene(void) {
 
                 OldVersion.clear();
                 version2.clear();
-                InsertVisualizedNodes.clear();
+                DeleteVisualizedNodes.clear();
 
                 FlattenTheTree(AVLTreeState[scenex - 1], OldVersion, version2, -1);
-                FlattenTheTree(AVLTreeState[scenex], InsertVisualizedNodes, version2, RotateState[scenex].first);
+                FlattenTheTree(AVLTreeState[scenex], DeleteVisualizedNodes, version2, RotateState[scenex].first);
                 
                 for (int i = 0; i < version2.size(); i++) {
                     for (int j = 0; j < OldVersion.size(); j++) {
@@ -130,8 +194,8 @@ void DrawInsertAVLTreeScene(void) {
                 }
             }
 
-            for (int i = 0; i < InsertVisualizedNodes.size(); i++) {
-                VisualizedTree* node = InsertVisualizedNodes[i];
+            for (int i = 0; i < DeleteVisualizedNodes.size(); i++) {
+                VisualizedTree* node = DeleteVisualizedNodes[i];
                 node->node.pos = node->node.targetPos;
 
                 DrawRing(node->node.targetPos, node->node.radius - node->node.thickness, node->node.radius, 0.0f, 360.0f, 100, node->node.color);
@@ -139,7 +203,7 @@ void DrawInsertAVLTreeScene(void) {
                 DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.pos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 3) / 2), 30, 3, BLACK);
             }
 
-            InsertNodeAVLTreeScene(version2);
+            DeleteNodeAVLTreeScene(version2);
 
             if (EndVisualizing) {
                 scenex++;

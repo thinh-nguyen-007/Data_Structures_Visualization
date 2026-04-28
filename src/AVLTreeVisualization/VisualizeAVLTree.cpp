@@ -4,6 +4,10 @@
 #include <string>
 #include <queue>
 #include "VisualizeAVLTree.h"
+#include "InsertAVLTreeScene.h"
+#include "InitialAVLTreeScene.h"
+#include "DrawLastAVLTree.h"
+#include "DeleteAVLTreeScene.h"
 #include "AVLTree.h"
 #include "DrawObjects.h"
 #include "MathFunctions.h"
@@ -19,6 +23,14 @@ namespace {
     Camera2D camera = {0};
     float speed = 0.01f;
 }
+
+int AVLScene = -1;
+/*
+0 - Initial AVL Tree Scene
+1 - Insert AVL Tree Scene
+2 - Delete AVL Tree Scene
+3 - Last AVL Tree Scene
+*/
 
 vector <pair <long long, int> > RotateState;
 float totWidth;
@@ -190,10 +202,42 @@ void OutputTree(void) {
     }
 }
 
+void UpdateAVLTreeSceneNumber(int x) {
+    if (x != -1) 
+        AVLScene = x;
+}
+
 void DeployAVLTreeVisualization(void) {
-    
+    if (AVLScene == 0) {
+        DeployInitialAVLTreeScene();
+
+        if (AVLTreeState.size() == 0) {
+            UpdateAVLTreeSceneNumber(3);
+        }
+    }
+    else if (AVLScene == 1) {
+        DrawInsertAVLTreeScene();
+
+        if (AVLTreeState.size() == 0) {
+            UpdateAVLTreeSceneNumber(3);
+        }
+    }
+    else if (AVLScene == 2) {
+        DrawDeleteAVLTreeScene();
+
+        if (AVLTreeState.size() == 0) {
+            UpdateAVLTreeSceneNumber(3);
+        }
+    }
+    else if (AVLScene == 3) {
+        DrawLastAVLTreeScene();
+    }
 }
 
 void UnloadAVLTreeScenes(void) {
     
+}
+
+int GetAVLTreeSceneNumber(void) {
+    return AVLScene;
 }
