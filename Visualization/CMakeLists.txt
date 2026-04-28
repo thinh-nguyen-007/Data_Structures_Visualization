@@ -33,3 +33,9 @@ elseif(APPLE)
 		$<TARGET_FILE_DIR:Visualization>
 	)
 endif()
+
+add_custom_command(TARGET Visualization POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets
+    $<TARGET_FILE_DIR:Visualization>/assets
+)
