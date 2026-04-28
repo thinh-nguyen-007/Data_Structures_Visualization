@@ -115,15 +115,19 @@ void OutputBox::setText(const std::string& str) {
 
     auto bounds = text.getLocalBounds();
 
-    text.setOrigin({
-        bounds.position.x + bounds.size.x / 2.f,
-        bounds.position.y + bounds.size.y / 2.f
-    });
+    text.setOrigin(
+        sf::Vector2f(
+            bounds.position.x + bounds.size.x / 2.f,
+            bounds.position.y + bounds.size.y / 2.f
+        )
+    );
 
-    text.setPosition({
-        box.getPosition().x + box.getSize().x / 2.f,
-        box.getPosition().y + box.getSize().y / 2.f
-    });
+    text.setPosition(
+        sf::Vector2f(
+            box.getPosition().x + box.getSize().x / 2.f,
+            box.getPosition().y + box.getSize().y / 2.f
+        )
+    );
 }
 
 void OutputBox::draw(sf::RenderWindow& window) {
