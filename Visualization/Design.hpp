@@ -97,20 +97,17 @@ inline sf::ConvexShape createEquilateralTriangle(
     sf::ConvexShape tri;
     tri.setPointCount(3);
 
-    float R = size; // bán kính
+    tri.setPoint(0, {0.f, -size});
+    tri.setPoint(1, {size, size});
+    tri.setPoint(2, {-size, size});
 
-    float base = rotationDeg * 3.14159265f / 180.f;
+    tri.setOrigin({0.f, 0.f});
 
-    for (int i = 0; i < 3; i++) {
-        float angle = base + i * 2.f * 3.14159265f / 3.f;
-
-        float x = center.x + R * std::cos(angle);
-        float y = center.y + R * std::sin(angle);
-
-        tri.setPoint(i, { x, y });
-    }
+    tri.setPosition(center);
 
     tri.setFillColor(color);
+
+    tri.setRotation(sf::degrees(rotationDeg));
 
     return tri;
 }

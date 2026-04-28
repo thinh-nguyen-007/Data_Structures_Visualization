@@ -61,6 +61,7 @@ int main() {
     btnStepB.setAction(&controller, &LinkedListController::undo);
     btnSkipF.setAction(&controller, &LinkedListController::runToEnd);
     btnSkipB.setAction(&controller, &LinkedListController::resetToStart);
+    btnSave.setAction(&controller, &LinkedListController::saveToFile);
 
     // ===== SPEED =====
     SpeedSlider slider({ 50, 180 }, 250);
@@ -111,7 +112,7 @@ int main() {
                     std::vector<int> vals = parseInput(input.getText());
 
                     if (!vals.empty()) {
-                        controller.deleteValue(vals[0]); // 👈 dùng value
+                        controller.deleteValue(vals[0]);
                     }
                 }
 

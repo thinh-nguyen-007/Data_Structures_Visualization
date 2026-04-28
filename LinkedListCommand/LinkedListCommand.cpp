@@ -231,30 +231,48 @@ void LinkedListController::rebuildListUpTo(int k) {
 void LinkedListController::saveToFile(const std::string& filename) {
     std::ofstream out(filename);
 
+    if (!out) {
+        currentMessage = "Failed to save file!";
+        return;
+    }
+
     for (int i = 0; i < list.getSize(); i++) {
         out << list.get(i) << " ";
     }
 
+    out.close();
+
     currentMessage = "Saved to " + filename;
+}
+
+void LinkedListController::saveToFile() {
+    saveToFile("data.txt");
 }
 
 void LinkedListController::loadFromFile(const std::string& filename) {
     std::ifstream in(filename);
 
-    if (!in.is_open()) {
+    if (!in) {
         currentMessage = "Cannot open file";
         return;
     }
 
-    // reset everything
-    resetToStart();
+    list.clear();
+    steps.clear();
+    highlightIndex = -1;
 
     int x;
     while (in >> x) {
         list.pushBack(x);
     }
 
+    in.close();
+
     currentMessage = "Loaded from " + filename;
+}
+
+void LinkedListController::loadFromFile() {
+    loadFromFile("data.txt");
 }
 
 void LinkedListController::deleteValue(int x) {

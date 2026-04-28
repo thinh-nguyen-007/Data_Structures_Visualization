@@ -107,5 +107,7 @@ public:
     int peekNextIndex() const;
 
     void saveToFile(const std::string& filename);
+    void saveToFile();
     void loadFromFile(const std::string& filename);
+    void loadFromFile();
 };

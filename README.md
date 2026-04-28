@@ -63,9 +63,7 @@ cmake -S . -B build
 # 2. Build
 cmake --build build --config Debug
 
-# 3. Copy and paste the assets and arial.ttf file in Visualization folder in build folder
-
-# 4. Run the application (Choose the command based on your OS)
+# 3. Run the application (Choose the command based on your OS)
 # For Windows:
 cd build/Visualization/Debug
 ./Visualization.exe

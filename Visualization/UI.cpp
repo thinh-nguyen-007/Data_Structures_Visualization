@@ -194,6 +194,7 @@ void centerText(sf::Text& text, const sf::FloatRect& bounds) {
 
 // ================= BUTTON =================
 void Button::draw(sf::RenderWindow& window) {
+    // ===== Circle =====
     sf::CircleShape shape(size);
     shape.setOrigin({ size, size });
     shape.setPosition(center);
@@ -210,36 +211,147 @@ void Button::draw(sf::RenderWindow& window) {
 
     window.draw(shape);
 
+    // ===== Common setup =====
+    float iconSize = size * 0.5f;
     sf::RectangleShape rect;
     rect.setFillColor(sf::Color::Black);
 
+    // ===== Icon =====
     switch (icon) {
 
     case ButtonIcon::Play:
-        window.draw(createEquilateralTriangle(center, size, 90.f, sf::Color::Black));
+        window.draw(createEquilateralTriangle(center, iconSize, 90.f, sf::Color::Black));
         break;
 
     case ButtonIcon::Pause:
-        rect.setSize({5.f, size});
-        rect.setPosition({center.x - 8.f, center.y - size/2});
+        rect.setSize({4.f, iconSize});
+        rect.setOrigin({2.f, iconSize / 2});
+        rect.setPosition({center.x - 4.f, center.y});
         window.draw(rect);
-        rect.setPosition({center.x + 3.f, center.y - size/2});
+
+        rect.setPosition({center.x + 4.f, center.y});
         window.draw(rect);
         break;
 
-    case ButtonIcon::Insert:
-        rect.setSize({size, 4.f});
-        rect.setPosition({center.x - size/2, center.y - 2.f});
+    case ButtonIcon::StepForward:
+        window.draw(createEquilateralTriangle({center.x - 4.f, center.y}, iconSize * 0.8f, 90.f, sf::Color::Black));
+
+        rect.setSize({3.f, iconSize});
+        rect.setOrigin({1.5f, iconSize / 2});
+        rect.setPosition({center.x + iconSize * 0.6f, center.y});
         window.draw(rect);
-        rect.setSize({4.f, size});
-        rect.setPosition({center.x - 2.f, center.y - size/2});
+        break;
+
+    case ButtonIcon::StepBackward:
+        window.draw(createEquilateralTriangle({center.x + 4.f, center.y}, iconSize * 0.8f, -90.f, sf::Color::Black));
+
+        rect.setSize({3.f, iconSize});
+        rect.setOrigin({1.5f, iconSize / 2});
+        rect.setPosition({center.x - iconSize * 0.6f, center.y});
+        window.draw(rect);
+        break;
+    case ButtonIcon::SkipForward:
+    {
+        float s = iconSize * 0.8f;
+
+        window.draw(createEquilateralTriangle(
+            {center.x - s * 0.4f, center.y},
+            s,
+            90.f,
+            sf::Color::Black
+        ));
+
+        window.draw(createEquilateralTriangle(
+            {center.x + s * 0.4f, center.y},
+            s,
+            90.f,
+            sf::Color::Black
+        ));
+    }
+    break;
+
+    case ButtonIcon::SkipBackward:
+    {
+        float s = iconSize * 0.8f;
+
+        window.draw(createEquilateralTriangle(
+            {center.x + s * 0.4f, center.y},
+            s,
+            -90.f,
+            sf::Color::Black
+        ));
+
+        window.draw(createEquilateralTriangle(
+            {center.x - s * 0.4f, center.y},
+            s,
+            -90.f,
+            sf::Color::Black
+        ));
+    }
+    break;
+
+    case ButtonIcon::Insert:
+        rect.setSize({iconSize, 4.f});
+        rect.setOrigin({iconSize / 2, 2.f});
+        rect.setPosition(center);
+        window.draw(rect);
+
+        rect.setSize({4.f, iconSize});
+        rect.setOrigin({2.f, iconSize / 2});
+        rect.setPosition(center);
         window.draw(rect);
         break;
 
     case ButtonIcon::Delete:
-        rect.setSize({size, 4.f});
-        rect.setPosition({center.x - size/2, center.y - 2.f});
+        rect.setSize({iconSize, 4.f});
+        rect.setOrigin({iconSize / 2, 2.f});
+        rect.setPosition(center);
         window.draw(rect);
+        break;
+
+    case ButtonIcon::Search:
+    {
+        sf::CircleShape c(iconSize * 0.6f);
+        c.setOrigin({iconSize * 0.6f, iconSize * 0.6f});
+        c.setPosition({center.x - 3.f, center.y - 3.f});
+        c.setFillColor(sf::Color::Transparent);
+        c.setOutlineColor(sf::Color::Black);
+        c.setOutlineThickness(2.f);
+        window.draw(c);
+
+        rect.setSize({iconSize * 0.6f, 3.f});
+        rect.setOrigin({0.f, 1.5f});
+        rect.setPosition({center.x + 2.f, center.y + 2.f});
+        rect.setRotation(sf::degrees(45));
+        window.draw(rect);
+    }
+        break;
+
+    case ButtonIcon::Save:
+    {
+        sf::RectangleShape box({iconSize, iconSize});
+        box.setOrigin({iconSize / 2, iconSize / 2});
+        box.setPosition(center);
+        box.setFillColor(sf::Color::Black);
+        window.draw(box);
+    }
+        break;
+
+    case ButtonIcon::Load:
+    {
+        sf::RectangleShape base({iconSize, iconSize / 2});
+        base.setOrigin({iconSize / 2, iconSize / 4});
+        base.setPosition({center.x, center.y + iconSize / 4});
+        base.setFillColor(sf::Color::Black);
+        window.draw(base);
+
+        window.draw(createEquilateralTriangle(
+            {center.x, center.y - iconSize / 4},
+            iconSize * 0.5f,
+            0.f,
+            sf::Color::Black
+        ));
+    }
         break;
 
     default:
