@@ -1,6 +1,6 @@
 // HeapController.cpp
 #include "HeapController.hpp"
-#include "algorithm"
+#include <algorithm>
 
 HeapController::HeapController() {
 	currentMessage = "Ready";
@@ -229,7 +229,7 @@ bool HeapController::loadFromFile(const std::string& filename) {
 	while (fin >> x) input.push_back(x);
 	if (input.empty()) return false; // no data
 	clear();
-	for (int i : input) heap.push(i);
+	for (int i : input) heap.pushRaw(i);
 	return true;
 }
 bool HeapController::saveToFile(const std::string& filename) {
