@@ -120,7 +120,7 @@ AVLTree::node* AVLTree::Insert(node* &tree, long long data) {
     return tree;
 }
 
-AVLTree::node* AVLTree::Delete(node* tree, long long data) {
+AVLTree::node* AVLTree::Delete(node* &tree, long long data) {
     if (tree == nullptr) return tree;
 
     if (data < tree->data)
@@ -128,10 +128,10 @@ AVLTree::node* AVLTree::Delete(node* tree, long long data) {
     else if (data > tree->data)
         tree->right = Delete(tree->right, data);
     else {
+        long long tmp = tree->data;
+
         if (!tree->left || !tree->right) {
             node* temp = tree->left ? tree->left : tree->right;
-
-            long long tmp = tree->data;
 
             if (!temp) {
                 temp = tree;
@@ -139,6 +139,7 @@ AVLTree::node* AVLTree::Delete(node* tree, long long data) {
             } else {
                 *tree = *temp;
             }
+
             delete temp;
 
             RotateState.push_back(make_pair(tmp, 3));
@@ -147,6 +148,9 @@ AVLTree::node* AVLTree::Delete(node* tree, long long data) {
             node* temp = getMinNode(tree->right);
             tree->data = temp->data;
             tree->right = Delete(tree->right, temp->data);
+
+            RotateState.push_back(make_pair(tmp, 3));
+            CreateAVLTreeScene();
         }
     }
 

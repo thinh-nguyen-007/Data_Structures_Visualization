@@ -164,9 +164,13 @@ int main() {
             UpdateAVLTreeSceneNumber(1);
         }
 
-        if (DoDelete && GetAVLTreeSceneNumber() == 3 && TTimer >= 11.0f) {
+        if (DoDelete && GetAVLTreeSceneNumber() == 3 && TTimer >= 9.0f) {
+            AVLTreeState.push_back(AVLTreeScene.back());
+            RotateState.push_back(make_pair(4, 3));
+            
             DoDelete = false;
             Tree.Delete(Tree.tree, 4);
+
             UpdateAVLTreeSceneNumber(2);
         }
 

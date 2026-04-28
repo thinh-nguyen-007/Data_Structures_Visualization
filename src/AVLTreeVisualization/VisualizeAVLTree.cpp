@@ -32,6 +32,7 @@ int AVLScene = -1;
 3 - Last AVL Tree Scene
 */
 
+long long GlobalDelete = 4;
 vector <pair <long long, int> > RotateState;
 float totWidth;
 float totHeight;

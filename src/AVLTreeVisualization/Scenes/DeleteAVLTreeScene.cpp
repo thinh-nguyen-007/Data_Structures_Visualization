@@ -16,20 +16,22 @@ namespace {
     bool EndVisualizing = false;
     bool DeleteYet = false;
     bool EndVisualizing1 = false;
-    int scenex = 0;
+    int scenex = 1;
     vector <VisualizedTree*> DeleteVisualizedNodes;
 }
 
 void DeleteNodes(vector <VisualizedTree*> &DeleteVisualizedNodes) {
     static float timer = 0.0f;
     static bool started = false;
-    static float duration = 1.0f;
+    static float duration = 2.0f;
     static int CurrentNode = DeleteVisualizedNodes.size();   
 
     if (!started) {
         timer = 0.0f;
         started = true;
     }
+
+    timer += GetFrameTime();
 
     float Time = timer / duration;
     Time = Clamp(Time, 0.0f, 1.0f);
@@ -47,7 +49,6 @@ void DeleteNodes(vector <VisualizedTree*> &DeleteVisualizedNodes) {
         started = false;
 
         if (CurrentNode >= DeleteVisualizedNodes.size()) {
-            Visualizing = false;
             EndVisualizing1 = true;
             CurrentNode = 0;
         }
@@ -111,28 +112,35 @@ void DeleteNodeAVLTreeScene(vector <VisualizedTree*> &DeleteVisualizedNodes) {
 void DrawDeleteAVLTreeScene(void) {
     static vector <VisualizedTree*> version2, OldVersion;
     static VisualizedTree* DeleteNode;
+    static vector <VisualizedTree*> NeedToDelete;
 
-    if (AVLTreeState.size() == 0) {
+    if (AVLTreeState.size() == 1) {
         return;
     }
     else {
-        if (scenex == 0) {
+        if (scenex < AVLTreeState.size()) {
             if (!Visualizing) {
                 Visualizing = true;
-                long long data = RotateState[0].first;
+                long long data = RotateState[scenex].first;
 
                 OldVersion.clear();
                 version2.clear();
                 DeleteVisualizedNodes.clear();
+                NeedToDelete.clear();
 
-                FlattenTheTree(AVLTreeScene.back(), OldVersion, version2, -1);
+                FlattenTheTree(AVLTreeState[scenex - 1], OldVersion, version2, -1);
                 FlattenTheTree(AVLTreeState[scenex], DeleteVisualizedNodes, version2, -1);
                 
                 vector <VisualizedTree*> temp;
 
-                for (int i = 0; i < DeleteVisualizedNodes.size(); i++) {
-                    for (int j = 0; j < OldVersion.size(); j++) {
+                for (int j = 0; j < OldVersion.size(); j++) {
+
+                    bool CheckAvailable = false;
+
+                    for (int i = 0; i < DeleteVisualizedNodes.size(); i++) {
                         if (DeleteVisualizedNodes[i]->data == OldVersion[j]->data) {
+                            CheckAvailable = true;
+
                             if (DeleteVisualizedNodes[i]->node.targetPos != OldVersion[j]->node.targetPos) {
                                 version2.push_back(DeleteVisualizedNodes[i]);
                                 version2.back()->node.pos = OldVersion[j]->node.targetPos;
@@ -141,12 +149,18 @@ void DrawDeleteAVLTreeScene(void) {
                                 temp.push_back(DeleteVisualizedNodes[i]);
                             }
                         }
+                    }
 
-                        if (OldVersion[j]->data == data) {
-                            DeleteNode = OldVersion[j];
-                        }
+                    if (!CheckAvailable) {
+                        NeedToDelete.push_back(OldVersion[j]);
                     }
                 }
+
+                for (int i = 0; i < version2.size(); i++) {
+                    cout << version2[i]->data << " ";
+                }
+
+                cout << endl;
 
                 DeleteVisualizedNodes.swap(temp);
             }
@@ -160,21 +174,33 @@ void DrawDeleteAVLTreeScene(void) {
                 DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.pos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 3) / 2), 30, 3, BLACK);
             }
 
-            vector <VisualizedTree*> temp;
-            temp.push_back(DeleteNode);
+            if (!EndVisualizing1) {
+                cout << scenex << " ____ " << NeedToDelete.size() << endl;
 
-            DeleteNodes(temp);
+                for (int i = 0; i < NeedToDelete.size(); i++) {
+                    cout << NeedToDelete[i]->data << endl;
+                    cout << NeedToDelete[i]->node.pos.x << " " << NeedToDelete[i]->node.pos.y << endl;
+                    cout << NeedToDelete[i]->node.targetPos.x << " " << NeedToDelete[i]->node.targetPos.y << endl;
+                }
 
-            if (EndVisualizing1) {
-                DeleteNodeAVLTreeScene(version2);
-            }   
+                DeleteNodes(NeedToDelete);
+            }
+            else {
+                if (version2.size()) {
+                    DeleteNodeAVLTreeScene(version2);
+                }
+                else {
+                    EndVisualizing = true;
+                }
+            }
 
             if (EndVisualizing) {
                 scenex++;
                 EndVisualizing = false;
+                EndVisualizing1 = false;
             }   
         }
-        else if (scenex < AVLTreeState.size()) {
+        /*else if (scenex < AVLTreeState.size()) {
             if (!Visualizing) {
                 Visualizing = true;
 
@@ -209,10 +235,11 @@ void DrawDeleteAVLTreeScene(void) {
                 scenex++;
                 EndVisualizing = false;
             }
-        }
+        }*/
         else if (scenex >= AVLTreeState.size()) {
             AVLTreeScene.push_back(AVLTreeState.back());
             AVLTreeState.clear();
+            RotateState.clear();
             scenex = 0;
         }
     }

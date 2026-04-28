@@ -149,6 +149,7 @@ void DrawInsertAVLTreeScene(void) {
         else if (scenex >= AVLTreeState.size()) {
             AVLTreeScene.push_back(AVLTreeState.back());
             AVLTreeState.clear();
+            RotateState.clear();
             scenex = 0;
         }
     }

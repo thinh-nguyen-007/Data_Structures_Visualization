@@ -98,5 +98,6 @@ void DeployInitialAVLTreeScene(void) {
     if (EndVisualizingInitialAVLTree) {
         AVLTreeScene.push_back(AVLTreeState.back());
         AVLTreeState.clear();
+        RotateState.clear();
     }
 }

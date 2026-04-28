@@ -27,6 +27,7 @@ struct VisualizedTree {
     }
 };
 
+extern long long GlobalDelete;
 extern vector < vector <RenderTexture2D> > AVLTreeScenes;
 extern vector <pair <long long , int> > RotateState;
 extern float totWidth;
