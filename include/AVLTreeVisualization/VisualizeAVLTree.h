@@ -28,15 +28,22 @@ struct VisualizedTree {
 };
 
 extern vector < vector <RenderTexture2D> > AVLTreeScenes;
-extern vector <pair <long long, int> > RotateState;
+extern vector <pair <long long , int> > RotateState;
 extern float totWidth;
 extern float totHeight;
+extern VisualizedTree* FindNode;
+extern vector <VisualizedTree*> VisualizedNodes;
+extern vector <VisualizedTree*> AVLTreeState;
+extern vector <VisualizedTree*> AVLTreeScene;
 
+void CreateAVLTreeScene(void);
+void DeployAVLTreeVisualization(void);
+void DrawAllAVLTree(void);
 void AVLTreeScenesInit(void);
 void PrepareAVLTree(void);
 void AVLTreeScenesDeployment(void);
 void UnloadAVLTreeScenes(void);
-void DrawAVLTree(void);
 void RecuresiveDraw(AVLTree::node* tree, VisualizedTree* visualizedNode, Vector2 parpos, float depth, float spacing, float distance);
 void OutputTree(void);
+void FlattenTheTree(VisualizedTree* AVLTree, vector <VisualizedTree*> &VisualizedNodes, vector <VisualizedTree*> &version2, long long FixedPoint);
 void ComputeInformation(void);

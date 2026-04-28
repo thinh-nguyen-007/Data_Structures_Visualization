@@ -37,7 +37,7 @@ public:
     bool checkRL(node* tree, long long data);
     int getHeight(node* tree);
     int getBalance(node* tree);
-    node* Insert(node* tree, long long data);
+    node* Insert(node* &tree, long long data);
     node* Delete(node* tree, long long data);
     node* getMinNode(node* tree);
     node* Search(node* tree, long long data);

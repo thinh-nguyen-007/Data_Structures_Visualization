@@ -15,7 +15,12 @@ AVLTree Tree;
 
 void AVLTree::Initialize(vector <long long> &a) {
     for (int i = 0; i < a.size(); i++) 
+    {
         tree = Insert(tree, a[i]);
+
+        RotateState.clear();
+        AVLTreeState.clear();
+    }
 }
 
 void AVLTree::Update(node* tree, long long data) {
@@ -34,9 +39,13 @@ int AVLTree::getBalance(node* tree) {
     return (getHeight(tree->left) - getHeight(tree->right));
 }   
 
-AVLTree::node* AVLTree::Insert(node* tree, long long data) {
+AVLTree::node* AVLTree::Insert(node* &tree, long long data) {
     if (tree == nullptr) {
+
         tree = new node(data);
+
+        RotateState.push_back(make_pair(data, 0));
+        CreateAVLTreeScene();
 
         return tree;
     }
@@ -55,23 +64,57 @@ AVLTree::node* AVLTree::Insert(node* tree, long long data) {
     int balance = getBalance(tree);
 
     // LL
-    if (balance > 1 && data < tree->left->data)
-        return rotateRight(tree);
+    if (balance > 1 && data < tree->left->data) {
+        tree = rotateRight(tree);
+        
+        RotateState.push_back(make_pair(tree->data, 2));
+        CreateAVLTreeScene();
+
+        return tree;
+    }
 
     // RR
-    if (balance < -1 && data > tree->right->data)
-        return rotateLeft(tree);
+    if (balance < -1 && data > tree->right->data) {
+        tree = rotateLeft(tree);
+
+        RotateState.push_back(make_pair(tree->data, 1));
+        CreateAVLTreeScene();
+
+        return tree;
+    }
 
     // LR
     if (balance > 1 && data > tree->left->data) {
         tree->left = rotateLeft(tree->left);
-        return rotateRight(tree);
+
+        RotateState.push_back(make_pair(tree->left->data, 1));
+        CreateAVLTreeScene();
+
+        tree = rotateRight(tree);
+
+        RotateState.push_back(make_pair(tree->data, 2));
+        CreateAVLTreeScene();
+
+        return tree;
     }
 
     // RL
     if (balance < -1 && data < tree->right->data) {
+        long long temp = tree->right->data;
+
         tree->right = rotateRight(tree->right);
-        return rotateLeft(tree);
+
+        RotateState.push_back(make_pair(tree->right->data, 2));
+        CreateAVLTreeScene();
+
+        temp = tree->data;
+
+        tree = rotateLeft(tree);
+
+        RotateState.push_back(make_pair(tree->data, 1));
+        CreateAVLTreeScene();
+
+        return tree;
     }
 
     return tree;
@@ -88,6 +131,8 @@ AVLTree::node* AVLTree::Delete(node* tree, long long data) {
         if (!tree->left || !tree->right) {
             node* temp = tree->left ? tree->left : tree->right;
 
+            long long tmp = tree->data;
+
             if (!temp) {
                 temp = tree;
                 tree = nullptr;
@@ -95,6 +140,9 @@ AVLTree::node* AVLTree::Delete(node* tree, long long data) {
                 *tree = *temp;
             }
             delete temp;
+
+            RotateState.push_back(make_pair(tmp, 3));
+            CreateAVLTreeScene();
         } else {
             node* temp = getMinNode(tree->right);
             tree->data = temp->data;
@@ -110,29 +158,49 @@ AVLTree::node* AVLTree::Delete(node* tree, long long data) {
     // LL
     if (balance > 1 && getBalance(tree->left) >= 0) {
         RotateState.push_back({tree->data, 2});
-        return rotateRight(tree);
+        tree = rotateRight(tree);
+
+        CreateAVLTreeScene();
+
+        return tree;
     }
 
     // LR
     if (balance > 1 && getBalance(tree->left) < 0) {
         RotateState.push_back({tree->left->data, 1});
         RotateState.push_back({tree->data, 2});
+        
         tree->left = rotateLeft(tree->left);
-        return rotateRight(tree);
+        CreateAVLTreeScene();
+
+        tree = rotateRight(tree);
+        CreateAVLTreeScene();
+
+        return tree;
     }
 
     // RR
     if (balance < -1 && getBalance(tree->right) <= 0) {
         RotateState.push_back({tree->data, 1});
-        return rotateLeft(tree);
+        tree = rotateLeft(tree);
+
+        CreateAVLTreeScene();
+
+        return tree;
     }
 
     // RL
     if (balance < -1 && getBalance(tree->right) > 0) {
         RotateState.push_back({tree->right->data, 2});
         RotateState.push_back({tree->data, 1});
+
         tree->right = rotateRight(tree->right);
-        return rotateLeft(tree);
+        CreateAVLTreeScene();
+
+        tree = rotateLeft(tree);
+        CreateAVLTreeScene();
+
+        return tree;
     }
 
     return tree;

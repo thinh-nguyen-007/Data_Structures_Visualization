@@ -9,4 +9,6 @@
 
 using namespace std;
 
-void InsertNodeAVLTreeScene(VisualizedTree* node, long long data);
+void InsertNodeAVLTreeScene(vector <VisualizedTree*> &InsertVisualizedNodes);    
+void RotateAVLTreeScene(VisualizedTree* node);
+void DrawInsertAVLTreeScene(void);

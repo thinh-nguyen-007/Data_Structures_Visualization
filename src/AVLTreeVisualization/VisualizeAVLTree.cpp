@@ -26,7 +26,10 @@ float totHeight;
 float timer = 0.0f;
 int CurrentNode = 0;
 VisualizedTree* VisualizedAVLTree = nullptr;
+VisualizedTree* FindNode = nullptr;
 vector <VisualizedTree*> VisualizedNodes;
+vector <VisualizedTree*> AVLTreeState;
+vector <VisualizedTree*> AVLTreeScene;
 
 void ComputeInformation(void) {
     totWidth = Pow(2, Tree.getHeight(Tree.tree) - 1) * 200.0f;
@@ -61,8 +64,13 @@ void AVLTreeScenesDeployment(void) {
     if (IsKeyDown(KEY_D)) camera.target.x += 100;
 
     BeginMode2D(camera);
-        DrawAVLTree();
+        DrawAllAVLTree();
     EndMode2D();
+}
+
+void CreateAVLTreeScene(void) {
+    PrepareAVLTree();
+    AVLTreeState.push_back(VisualizedAVLTree);
 }
 
 void PrepareAVLTree(void) {
@@ -70,29 +78,82 @@ void PrepareAVLTree(void) {
         VisualizedAVLTree = new VisualizedTree(Tree.tree->data, Vector2{totWidth / 2, 50}, Vector2{totWidth / 2, 50});
         VisualizedAVLTree->edge = line(Vector2{totWidth / 2, 50}, Vector2{totWidth / 2, 50}, Vector2{totWidth / 2, 50}, Vector2{totWidth / 2, 50}, 5.0f, BLACK);
         VisualizedAVLTree->node = circle(Vector2{totWidth / 2, 50}, Vector2{totWidth / 2, 50}, 50.0f, 5.0f, BLACK);
+
+        RecuresiveDraw(Tree.tree, VisualizedAVLTree, Vector2{totWidth / 2, 50}, 50, totWidth / 4, totHeight / (1.0f * Tree.getHeight(Tree.tree) - 1.0f));
     }
 
-    RecuresiveDraw(Tree.tree, VisualizedAVLTree, Vector2{totWidth / 2, 50}, 50, totWidth / 4, totHeight / (1.0f * Tree.getHeight(Tree.tree) - 1.0f));
+    /*queue <AVLTree::node*> q;
 
-    if (VisualizedAVLTree == nullptr) return;
-
-    queue <VisualizedTree*> q;
-
-    q.push(VisualizedAVLTree);
+    if (Tree.tree) q.push(Tree.tree);
 
     while (!q.empty()) {
-        VisualizedTree* node = q.front();
+        AVLTree::node* node = q.front();
         q.pop();
 
-        VisualizedNodes.push_back(node);
+        cout << node->data << " ";
 
-        if (node->left) q.push(node->left);
-        if (node->right) q.push(node->right);
+        if (node->left) {
+            q.push(node->left);
+        }
+
+        if (node->right) {
+            q.push(node->right);
+        }
+    }
+
+    cout << endl;*/
+
+    if (VisualizedAVLTree == nullptr) return;
+}
+
+void FlattenTheTree(VisualizedTree* AVLTree, vector <VisualizedTree*> &VisualizedNodes, vector <VisualizedTree*> &version2, long long FixedPoint) {
+    queue <pair <VisualizedTree*, bool> > q;
+
+    if (AVLTree->data == FixedPoint) {
+        q.push(make_pair(AVLTree, true));
+    }
+    else {
+        q.push(make_pair(AVLTree, false));
+    }
+
+    while (!q.empty()) {
+        VisualizedTree* node = q.front().first;
+        bool Check = q.front().second;
+        q.pop();
+
+        if (!Check) {
+            VisualizedNodes.push_back(node);
+        }
+        else {
+            version2.push_back(node);
+        }
+
+        if (node->left) {
+            if (node->left->data == FixedPoint) {
+                q.push(make_pair(node->left, true));
+            }
+           else {
+                q.push(make_pair(node->left, Check));
+           }
+        }
+
+        if (node->right) {
+            if (node->right->data == FixedPoint) {
+                q.push(make_pair(node->right, true));
+            }
+            else {
+                q.push(make_pair(node->right, Check));
+            }
+        }
     }
 }
 
 void RecuresiveDraw(AVLTree::node* tree, VisualizedTree* visualizedNode, Vector2 parpos, float depth, float spacing, float distance) {
     if (tree == nullptr) return;
+
+    if (tree->data == RotateState.front().first && FindNode == nullptr) {
+        FindNode = new VisualizedTree(*visualizedNode);
+    }
 
     if (tree->left) {
         Vector2 dir = Vector2Normalize(Vector2Subtract(Vector2{parpos.x - spacing, depth + distance}, parpos));
@@ -118,53 +179,8 @@ void RecuresiveDraw(AVLTree::node* tree, VisualizedTree* visualizedNode, Vector2
         RecuresiveDraw(tree->right, visualizedNode->right, Vector2{parpos.x + spacing, depth + distance}, depth + distance, spacing / 2, distance);
 }  
 
-void DrawAVLTree(void) {
-    static float timer = 0.0f;
-    static bool started = false;
-    static float duration = 1.0f;
+void DrawAllAVLTree(void) {
 
-    static Vector2 startNodePos;
-    static Vector2 endEdgePos;
-
-    for (int i = 0; i < min(CurrentNode, (int)VisualizedNodes.size()); i++) {
-        VisualizedTree* node = VisualizedNodes[i];
-
-        DrawRing(node->node.targetPos, node->node.radius - node->node.thickness, node->node.radius, 0.0f, 360.0f, 100, node->node.color);
-        DrawShorterLineStartEnd(node->edge.targetStart, node->edge.targetEnd, 50.0f, node->edge.thickness, node->edge.color);
-        DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.targetPos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 5) / 2), 30, 5, BLACK);
-    }
-
-    if (CurrentNode >= VisualizedNodes.size()) return;
-
-    VisualizedTree* node = VisualizedNodes[CurrentNode];
-
-    if (!started) {
-        timer = 0.0f;
-        started = true;
-
-        startNodePos = VisualizedNodes[CurrentNode]->node.pos;
-        endEdgePos = VisualizedNodes[CurrentNode]->edge.end;
-    }
-
-    timer += GetFrameTime();
-
-    float Time = timer / duration;
-    Time = Clamp(Time, 0.0f, 1.0f);
-
-    node->node.pos = Vector2Lerp(startNodePos, node->node.targetPos, Time);
-    node->edge.end = Vector2Lerp(endEdgePos, node->edge.targetEnd, Time);
-
-    DrawRing(node->node.pos, node->node.radius - node->node.thickness, node->node.radius, 0.0f, 360.0f, 100, node->node.color);
-    DrawShorterLineStartEnd(node->edge.start, node->node.pos, 50.0f, node->edge.thickness, node->edge.color);
-    DrawTextEx(GetFontDefault(), to_string(node->data).c_str(), Vector2Subtract(node->node.pos, MeasureTextEx(GetFontDefault(), to_string(node->data).c_str(), 30, 3) / 2), 30, 3, BLACK);
-
-    if (timer >= duration) {
-        node->node.pos = node->node.targetPos;
-        node->edge.end = node->edge.targetEnd;
-
-        CurrentNode++;
-        started = false;
-    }
 }
 
 void OutputTree(void) {
@@ -172,6 +188,10 @@ void OutputTree(void) {
         cout << VisualizedNodes[i]->node.pos.x << " " << VisualizedNodes[i]->node.pos.y;
         cout << " ___ " << VisualizedNodes[i]->node.targetPos.x << " " << VisualizedNodes[i]->node.targetPos.y << endl;
     }
+}
+
+void DeployAVLTreeVisualization(void) {
+    
 }
 
 void UnloadAVLTreeScenes(void) {
